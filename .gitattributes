@@ -1,0 +1,10 @@
+# Keep files byte-identical in the working tree and in the repo.
+# engine/ MUST stay byte-identical to the upstream scroll-craft engine.
+* text=auto eol=lf
+
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.webp binary
+*.gif binary
+*.woff2 binary
