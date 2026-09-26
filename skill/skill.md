@@ -2,7 +2,7 @@
 name: portfolio-motion-design
 description: >-
   The complete interaction, effect and transition system of the Yohannes Assefa
-  portfolio-recreation site (static HTML/CSS/JS on the unmodified scroll-craft
+  johns-portfolio site (static HTML/CSS/JS on the unmodified scroll-craft
   engine). Load this skill whenever you add pages, sections, components or new
   effects to this site, recreate its motion language elsewhere, or need to know
   which data-sc-* attribute / CSS pattern / JS hook to reach for. Covers scroll
@@ -12,7 +12,7 @@ description: >-
 
 # Portfolio Motion & Interaction System
 
-Site: `portfolio-recreation` — multi-page static portfolio for Yohannes Assefa.
+Site: `johns-portfolio` — multi-page static portfolio for Yohannes Assefa.
 Stack: plain HTML/CSS/JS. No framework. Two stylesheets and two scripts on every page:
 
 | File | Role | May edit? |

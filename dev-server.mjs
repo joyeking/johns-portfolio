@@ -53,6 +53,6 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  console.log(`portfolio-recreation served from ${ROOT}`);
+  console.log(`johns-portfolio served from ${ROOT}`);
   console.log(`  → http://localhost:${PORT}/`);
 });
