@@ -211,10 +211,13 @@ What changed:
 - **The index carries the sequence.** `.case-row .idx` is set large in the
   display serif with tabular figures and turns accent on row hover, so the
   list reads as a table of contents rather than five cards.
-- **The lead row earns its size.** The first row of every work list gets
-  `.is-lead` — a wider plate, a larger title, a marked `.is-featured` chip, and
-  re-laid-out breakpoints at 1080px and 760px so it collapses exactly like the
-  others.
+- **The work list is one rhythm.** Every row is identical at rest. v13 gave the
+  first row `.is-lead` — a wider plate, a larger title — so the list had a
+  hierarchy, but that made size a property of POSITION rather than of the
+  pointer: the top project read as the featured one forever and the other four
+  looked like footnotes. v20 retires `.is-lead` and gives every row the same
+  enlargement on hover and focus instead. The `.is-featured` chip stays, because
+  a label is honest and a size is not.
 - **Labels only mark sections.** `.meta-row` and `.strip .item` drop their
   uppercase transform; `.kicker` keeps it.
 - **Smaller furniture.** The mode switch, chips, service titles, timeline,
@@ -616,6 +619,286 @@ and every generated page is now free of both artefacts.
 26 contrast gates pass: 6 section-ground pairs, 15 project-canvas pairs, and
 8 masthead pairs. All 205 internal references resolve. The engine files are
 byte-identical.
+
+## 17. v18–v20 — the pinned act, the grounds, and the hover that carries the list
+
+Three passes: two fixes, and the correction of an over-correction.
+
+### 1. v18 — the pinned act
+
+Three measured defects in the two pinned process acts (home "How I work",
+/about/ "The process"):
+
+- **The stage collapsed against the left edge.** v17 retired the full-bleed hack
+  with `margin-inline:0` on `.process-stage`, but that element is not a panel
+  inside a column — it IS the column: the act's `[data-sc-stage]` child also
+  carries `.wrap`, so the rule overwrote `.wrap`'s `margin-inline:auto`. The
+  column is a `.wrap` again.
+- **The act loaded blank.** The engine clamps progress to 0 for a pinned act's
+  whole entry slide — a full viewport of scrolling — and every cue window began
+  at `from:0`, which is `opacity:0`. The section scrolled up empty and popped its
+  copy in once the pin bit. Arrival is the engine's `[data-sc-in]` reveal now, so
+  the copy is on screen for the whole entry slide. The heading's
+  `data-sc-kinetic="lines"` went with it: a line split measured against fallback
+  line boxes re-flowed the heading when the webfont arrived.
+- **The pin could not fit.** The engine sticks the stage in a 100svh box with
+  `overflow:clip` while the act still carried `.section`'s padding, so its travel
+  was `span * 100vh` minus 100svh minus up to 300px of padding — negative on the
+  home act (span 1.15). The act has no padding of its own now; the breathing room
+  lives inside the stage.
+
+Progress is read from the engine's own `--sc-p`: a rail under the heading fills
+across the travel and each step's rule fills as its window passes.
+
+### 2. v19 — a theme contract that holds
+
+The switch was inert in places because tokens were re-declared below `<html>`:
+`body[data-project]` re-declared every theme token on `<body>`, and
+`[data-ground]` did the same per section, so both stayed locked to one canvas.
+The contract is stated once now — `:root` for light, `html[data-theme=dark]` for
+dark, `color-scheme` on both so the browser's own surfaces follow — every stale
+rule is restated from tokens, and the five case studies get a light twin of their
+own hue.
+
+**The over-correction, corrected.** Two differently-coloured sections must never
+sit next to each other; that is not the same as having no colour anywhere. The
+first pass read it the second way, set `background:transparent` with every token
+reset to `inherit`, and flattened every page.
+
+### 3. The alternating band, and why it is paper
+
+`build_site.mjs` walks the top-level sections in document order and tints every
+other one, so two tinted bands are never adjacent and the band is never the one
+that opens a page. One further guard: the last section of the walk is never
+tinted, because the contact band closes every page and in dark mode that band is
+butter — a tinted band beside it would be two light sections in a row. On
+`/projects/` the two candidates are the list and the archive, and the archive is
+the section the contact band follows, so that page carries no band at all; its
+rows and hairlines carry the structure. (Inverting the starting parity for that
+page is the one-line change if a band is wanted there.)
+
+The band is the site's **paper** in both themes — 9% sand into butter, `#FBF5BE`
+— with chocolate ink. That is measured, not taste:
+
+| Pair on the band | Ratio |
+|---|---|
+| ink on band | **13.0** |
+| muted on band (68% ink into the band) | **4.9** |
+| accent on band (re-derived `--blue`, `#62380C`) | **9.0** |
+
+A dark band lifted off the earth instead (9% butter into earth, butter ink) would
+pass for the ink at 5.3:1 but not for `--muted`: 68% ink mixed toward a band that
+is *lighter* than the canvas lands at **3.4:1**, under the AA gate. The band is
+paper in both themes for that reason.
+
+Two **page** tokens are re-derived inside a band, because in dark mode leaving
+them alone is an invisible failure rather than a near miss:
+
+| Token | Left as the page's | In the band |
+|---|---|---|
+| `--blue` | dark accent `#FADB8D` on the paper band = **1.2:1** | `#62380C` = **9.0:1**, and `--sc-accent` follows |
+| `--bg` | earth under the band's chocolate ink: the archive card's overlay veil and the inverted chip's text = **2.0:1** each | the band = **13.0:1** |
+
+### 4. v20 — the hovered project is the one that enlarges
+
+Sizing was a property of position rather than of the pointer, and nothing
+responded: `.case-row:hover` only tinted a background, and v11 had already
+cancelled the image transforms. The generator emits no `is-lead` now, every row
+is identical at rest, and the enlargement is a state — the row lifts 4px with a
+shadow, the plate scales 1.06 inside its own `overflow:hidden` frame, and the
+title, index and arrow move together. It is scoped to `:hover` **and**
+`:focus-visible`, so the same enlargement is reachable from the keyboard, and
+`prefers-reduced-motion` switches the movement off explicitly: the global
+reduced-motion rule shortens durations without removing a transform.
+
+The two archive cards on `/projects/` get the same treatment — a lift, a 1.04
+plate scale inside the card's own clipping frame, and v11's 0.66 hover opacity
+kept so the copy on the plate never brightens. The retired `.is-lead` rules are
+neutralised rather than deleted, so a cached page cannot reintroduce a
+permanently larger first row while the stylesheet reloads.
+
+## 18. v21 — the motion was cancelling itself
+
+Reported as *"I only see a small transition while scrolling, no other effects."*
+Measured in a real browser, that turned out to be close to literal: of the site's
+entire motion system, exactly one mechanism was doing anything.
+
+### What was actually running
+
+| Mechanism | State before this pass |
+|---|---|
+| `[data-sc-in]` fade + rise | working, on 36 targets |
+| …its **blur** | **dead on every page** |
+| `[data-sc-stagger]` cascade | **dead on both work lists** |
+| pinned act — the rail | working, over 450px of scroll |
+| pinned act — the steps | **no choreography at all** |
+| `data-sc-count` (home stats) | **dead** |
+| `data-sc-kinetic` (7 case titles) | **dead** |
+
+The one thing that survived was a plain 420ms fade. Everything else had been
+silently deleted by a `transition` shorthand somewhere above it in the cascade.
+
+### 1. A stagger container was fading itself, and therefore its own children
+
+The engine watches `[data-sc-in]`, and on entry adds `.sc-in` to that element
+**and** staggers its direct children. So a stagger container wears two hats: it is
+the observer's target, and it is also a reveal target in its own right. But it is
+a transparent box — the content is its children — so the container's own fade is
+a **ceiling on the whole sequence**.
+
+Measured on the five-row work list: the container began its 0 → 1 ramp the
+instant the section entered, over 420ms, while child 4 was not due to start for
+520ms. By the time row 4 began, the container was already fully opaque. A 130ms
+stagger cannot be seen through a 420ms parent fade, and the numbers in §16.4 —
+which had been carefully retuned upward to 130–140ms — were being thrown away by
+a rule nobody had looked at.
+
+A container that staggers no longer animates its own `opacity` or `transform`.
+It keeps its `filter`, deliberately: blur is not gated by the container's
+opacity, so the list still pulls into focus as a whole on arrival, which is the
+v4 effect and the thing that makes a section feel handed to you rather than
+switched on.
+
+**After**, the five rows first become visible at 53 / 220 / 371 / 437 / 570ms —
+35 distinct opacity states across one reveal.
+
+### 2. Two `transition` shorthands had deleted the reveal
+
+A `transition` shorthand **replaces** the whole list; it does not merge. Two rules
+were therefore silently cancelling the reveal on the elements they matched:
+
+- **The v17 retune** wrote `transition: opacity, transform` on the reveal
+  selector, dropping the `filter 620ms` that v4 had put on the *same selector*.
+  `filter:blur(5px)` sat at opacity 0, snapped to `blur(0)` on the frame
+  `.sc-in` landed, and resolved while the element was still invisible. The
+  scroll-appear blur — the site's signature motion — had been contributing
+  nothing on any page. It is back, at 520ms so the focus pulls rather than snaps.
+- **v20's hover lists** on `.case-row` and `.project-card` named no `opacity`, and
+  sat after the reveal at equal specificity. This was the worst of the four: a
+  property absent from `transition-property` is not transitioned *at all*, and
+  `transition-delay` does not apply to it either. So every project row jumped
+  from opacity 0 to 1 **instantly** on the frame `.sc-in` landed, while its 10px
+  rise — which *was* in the list — was still delayed and animated. The rows
+  appeared fully opaque and *then* slid up, staggered. The 130ms cascade was
+  doing nothing on the site's most important list, and the v20 hover was the
+  thing that broke it.
+
+`opacity` and `filter` are now in the hover lists, and in the four other component
+rules that had the same defect: `.gallery img`, `.img-band img`, `.cs-duo
+article`, `.cs-results div`, `.cs-next-card`.
+
+### 3. The pinned acts had 450px of travel to spend
+
+The engine computes travel as `sectionHeight - stageHeight`, and the stage is
+`height:100svh`, so **the travel is exactly `(span - 1) × 100vh` and nothing
+else.** The spans were 1.5 (home, three steps) and 1.6 (/about/, five steps) —
+0.5 and 0.6 of a screen, or 450px and 540px.
+
+That was the entire budget for the act's choreography: the rail went from empty
+to full inside 450px, each step's rule filled over 1/6 of that (75px), and then
+the act held **frozen for the remaining 900px** while the reader scrolled past a
+finished progress bar. Five steps had 540px between them. At a wheel notch that
+is four or five clicks — the site's one large effect was over before it could be
+noticed, which is the whole of the reported symptom.
+
+Spans are now **2.8** (1.8 screens, three steps) and **3.2** (2.2 screens, five
+steps) — about 600px of travel per step. The cost is page length: the home page
+went 7,438px → 8,608px. That is the right trade for an act that can now be seen.
+
+### 4. The steps had a one-pixel rule and no state
+
+`--sc-at` drove a 2px line and nothing else. The cards themselves never changed:
+all three sat at full strength for the whole pin, and the rail was the only thing
+saying where the reader was.
+
+Each step now **lights** as its own stretch of the rail passes, on the same
+`--sc-at` slot the rule already uses, so the line and the card agree. The
+unlit→lit range is 18 distinct states on /about/ and 10 on the home page, with
+one step at a time and a clean handoff.
+
+Deliberately **colour, not opacity or transform.** Both are already transitioned on
+these elements for the arrival reveal, and a scroll-linked value fighting a 420ms
+transition is how you get a section that is briefly invisible after a scrollbar
+drag. Colour is in no transition list here, so it tracks the pin exactly and
+cannot hide anything.
+
+The unlit floor is **0.68**, and that number was corrected once during the pass.
+`p` is 0 for the act's *entire entry slide* — a full viewport before the pin
+engages — so a first attempt at 0.42 made the section scroll up dimmed, which is
+precisely the "the act loaded blank" defect §17.1 had already recorded and fixed.
+The sequence is therefore carried by the numeral (`--muted` → `--blue`, the same
+pair the work lists use on hover), the heading (`--muted` → `--ink`) and the
+filling rule, all of which can de-emphasise without putting unreadable text on
+screen. Below 860px the act stops pinning, and under `prefers-reduced-motion` the
+rail is shown settled — so both cases set `--sc-lit: 1` and every step is lit.
+
+### 5. Two engine features were wired to nothing
+
+- **`data-sc-kinetic="words"`** was on all seven case-study titles and had never
+  run. The engine splits text only for an element that is *simultaneously* a
+  `[data-sc-cue]` inside a `[data-sc-act]`; these `h1`s had the attribute and
+  neither, so it was an orphan — `kinetic: 1 total, 1 ORPHANED`. The titles were
+  static text. They are now split into `<span class="kt-w">` **in the HTML**, so
+  the split is right from first paint and never re-measured — the engine's own
+  splitter re-measures on webfont load, which is why §17.1 retired the process
+  heading's line split. `.kt-w` is `display:inline-block` (a transform does not
+  apply to a non-replaced inline box) and outranks the v2 `h1 span{display:block}`
+  rule that would otherwise put one word per line. Applied to every page title
+  that was previously bare: the two archive case studies, /about/, /projects/,
+  /blogs/ and both articles.
+- **The home page's three `data-sc-count` stats** sat outside every act, and the
+  engine only collects counters from within one. They printed their final value
+  and never moved. The About section is now `data-sc-act="flow"`, and they count
+  `0 → 5 / 7 / 10` as the section arrives.
+
+### 6. Two deployment bugs
+
+- **The two archive case studies were 404ing their own work.** They referenced
+  `presentation-assets/`, which is gitignored — 30 MB of full-size PNG captures —
+  so `d1.png` and `m1.png` rendered perfectly in local preview and did not exist
+  on the deployed site. The four referenced frames are now re-encoded to
+  `assets/shows/` as JPEG q84 at identical pixel dimensions: **3.4 MB → 727 KB**.
+  These are the largest assets on the site and they load on the two pages a
+  visitor is most likely to reach from the archive.
+- **There was no sitemap.** `.gitignore` has listed `sitemap.xml` as build output
+  "regenerated by `build_site.mjs`" since the first commit, and no code ever
+  wrote one. It is generated now, 13 URLs, cross-checked against the 13
+  canonical tags (they agree exactly). `lastmod` is the file mtime, which is
+  honest for a static site.
+
+### Verified
+
+Carried forward from v20 and re-checked:
+
+- `node build_site.mjs` regenerates all 13 pages plus `sitemap.xml`.
+- No page carries `is-lead`; no page carries two tinted bands in a row, and none
+  carries a tinted band against the contact band.
+- Every generated page is UTF-8 with no BOM, and has no mojibake. (The deployed
+  build had a BOM and 25 mojibake sequences; that local fix had never been
+  pushed.)
+
+For v21 specifically, measured in a real browser:
+
+- **Every reveal target transitions its own opacity**, on all 13 pages. Before:
+  5 offenders on the home page alone, 7 on /projects/, 7 on a case study.
+- **Every `[data-sc-in]` that uses a blur also transitions `filter`** — 18/18 on
+  the home page, 26/26 on a case study, 12/12 on /about/.
+- **No stagger container fades itself**, on any page.
+- **The five-row work list staggers in time**: rows first visible at
+  53 / 220 / 371 / 437 / 570ms, 35 distinct states, fully in place at ~0.87s.
+- **Both pinned acts scrub**: 1620px and 1980px of travel, 10 and 18 distinct
+  step states, one step at a time.
+- **Both pinned stages still fit** their 100svh box with no overflow
+  (`scrollHeight === clientHeight`), at 1440×900.
+- **Below 860px** the act un-pins (`height:auto`, `position:static`) and all
+  steps are lit, at 390×844.
+- **Under `prefers-reduced-motion: reduce`**, scrolling the full home page leaves
+  **0 of 36** reveal targets below 0.9 opacity, and all three pinned steps at 1.
+- **No `data-sc-kinetic` or `data-sc-count` attribute is orphaned** on any page.
+- **13 HTML files, 244 internal `href`/`src` targets, all resolve on disk.**
+  No 404s and no JS errors on any page, in either theme. The four archive
+  showcase frames load, and the desktop/phone toggle swaps between them.
+
 
 
 

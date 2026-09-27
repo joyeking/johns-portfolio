@@ -18,17 +18,43 @@ A multi-page recreation and upgrade of the [Framer portfolio](https://appreciati
 ## Signature interactions
 
 Deliberately few. The site uses the scroll-craft engine's devices and almost nothing else.
+Every item below is verified working in a browser; `DESIGN.md` §18 records what was
+broken and why it was invisible.
 
 - **Blue circle cursor** that grows over interactive elements (pointer-fine only)
-- **One pinned act per page** — the home page pins the "how I work" section, the About
-  page pins the five-step process. Everything else is an ordinary scroll-through.
-- **Editorial case list** — the home page's selected work is five hairline rows, each a
-  link into its own case study, with real duration/scope facts instead of decorative cards
-- **Engine count bloom** (`data-sc-count`) for the year/project/client figures
+- **One pinned act per page** — the home page pins the "how I work" section (three
+  steps), the About page pins the five-step process. The span is the act's entire
+  scroll budget: travel is exactly `(span - 1) × 100vh`, because the stage is
+  `100svh` tall. Both are set in `build_site.mjs` (`PIN_SPAN_HOME` / `PIN_SPAN_ABOUT`).
+  Each step lights as the rail reaches its slot — numeral to `--blue`, heading to
+  `--ink`, body copy 0.68 → 1, and the 2px rule above it fills — so the section
+  plays as a sequence rather than a static grid beside a progress bar.
+- **Staggered entrances** — `[data-sc-stagger]` cascades a container's direct
+  children. A staggering container is a *trigger*, not a reveal target: it does not
+  fade its own opacity, because that fade is a ceiling on every child. It keeps its
+  blur, so a list pulls into focus as a whole on arrival.
+- **Word-by-word page titles** — titles are split into `.kt-w` spans **in the HTML**
+  so the split is correct from first paint. (`data-sc-kinetic` looks like it should
+  do this and does not: the engine only splits text for an element that is also a
+  `[data-sc-cue]` inside a `[data-sc-act]`.)
+- **Editorial case list** — the home page's selected work is five hairline rows, all
+  identical at rest; the hovered (or keyboard-focused) one is the one that enlarges
+- **Engine count bloom** (`data-sc-count`) for the year/project/client figures. These
+  only run inside a `[data-sc-act]`, so the section holding them must be one.
 - **One marquee** — the client strip on the home page, at label size, paused on hover
 - **Mobile menu** — one `<nav>` that is a row on desktop and a panel under 860px,
   driven by `data-open` so CSS owns the layout and JS owns no geometry
 - **View Transitions** between pages, plus `prefers-reduced-motion` handled by the engine
+
+### One thing to know before editing `transition`
+
+A `transition` shorthand **replaces** the whole list — it does not merge with a
+rule further up the cascade. Two of the site's motion defects were exactly this: a
+retune that dropped `filter` from the reveal, and a hover rule that dropped
+`opacity` from a staggered row, so the row snapped in instantly while its rise was
+still delayed. Any new rule that sets `transition` on an element that also carries
+`data-sc-in` (or is a child of `[data-sc-stagger]`) **must** include `opacity` and
+`filter`, or it will silently delete that element's entrance.
 
 ## Design system
 
@@ -128,7 +154,7 @@ npx skills add Leonxlnx/taste-skill -s minimalist-ui   # the taste repo has more
 - Static HTML/CSS/JS — no framework, no build step required to view
 - `engine/scrollcraft.css` + `engine/scrollcraft.js` used unmodified per the engine's rules
 - `site.css` / `site.js` carry the portfolio's own design system and bespoke interactions
-- `build_site.py` regenerates all pages from the project data at its top
+- `build_site.mjs` regenerates all pages, `sitemap.xml` and nothing else
 
 ## Rebuild
 
@@ -136,6 +162,44 @@ npx skills add Leonxlnx/taste-skill -s minimalist-ui   # the taste repo has more
 node build_site.mjs          # every page is generated; never hand-edit page bodies
 npx impeccable detect .      # 61-rule design scan (findings on stderr, --json for CI)
 ```
+
+`build_site.mjs` also writes `sitemap.xml` (13 URLs, directory-form, cross-checked
+against the pages' own canonical tags). It is gitignored as build output and is
+regenerated on every run, so it must never be committed by hand.
+
+### Deploy-critical assets
+
+`assets/shows/` holds the four captured stills the two archive case studies display
+in a browser frame (desktop + phone for each). They are committed, and the pages
+reference **only** this folder.
+
+They are derived from `presentation-assets/`, which is gitignored and holds the
+full-size PNG captures (30 MB, fourteen frames per project). An earlier version of
+the pages pointed straight at `presentation-assets/`, so those two case studies
+rendered their own work perfectly in local preview and 404'd on the deployed site.
+`assets/shows/` is the same four frames re-encoded as JPEG q84 at identical pixel
+dimensions — 3.4 MB became 727 KB. After new captures, re-encode into
+`assets/shows/`; the generator only references the paths and does no image
+processing of its own.
+
+### Output encoding
+
+`build_site.mjs` writes UTF-8 with no BOM. If you post-process the generated
+HTML in PowerShell, read and write it as UTF-8 explicitly
+(`[System.IO.File]::ReadAllText($p, [Text.Encoding]::UTF8)`). A default-encoded
+`Get-Content`/`Set-Content` round-trip double-encodes the em dashes and curly
+apostrophes into `â€"` and `â€™`, which then shows up as a garbled browser tab
+title. The titles and descriptions are plain UTF-8 and must stay that way.
+
+### Logo
+
+`assets/site/logo.png` is the full-size source (1122x1402, ~2.4 MB) and is
+excluded from git. Three square crops are derived from it and are what the site
+loads — `logo-512.jpg` for the nav brand mark, `logo-180.jpg` for the Apple touch
+icon, `logo-64.jpg` for the favicon. To regenerate them after replacing the
+source, crop a 700px-wide window centred on the face (centre ≈ x 561, y 640 in
+the source) and downscale to each size. `LOGO`, `LOGO_ICON` and `LOGO_APPLE` at
+the top of `build_site.mjs` point at these files.
 
 ## Preview locally
 

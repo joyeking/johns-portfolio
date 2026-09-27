@@ -53,7 +53,7 @@
 [data-sc-in].sc-in{filter:blur(0)}
 [data-sc-in]{transition:opacity 620ms var(--sc-ease-out),transform 620ms var(--sc-ease-out),filter 620ms var(--sc-ease-out)}
 
-.gallery img{transition:transform .7s var(--sc-ease-out),filter .7s var(--sc-ease-out);cursor:pointer}
+.gallery img{transition:transform .7s var(--sc-ease-out),filter .7s var(--sc-ease-out),opacity 420ms var(--sc-ease-out);cursor:pointer}
 .gallery img:hover{filter:saturate(1)}
 .post-card img{transition:transform .7s var(--sc-ease-out),opacity .4s}
 .post-card:hover img{transform:none;filter:saturate(1.03)}
@@ -120,7 +120,7 @@ html[data-theme=dark] .ms-light{opacity:.9}
 
 /* image bands — fill empty space with real work */
 .img-band{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;width:min(1400px,calc(100% - 48px));margin-inline:auto}
-.img-band img{width:100%;height:clamp(150px,20vw,290px);object-fit:cover;filter:saturate(.82);transition:transform .7s var(--sc-ease-out),filter .7s;will-change:transform}
+.img-band img{width:100%;height:clamp(150px,20vw,290px);object-fit:cover;filter:saturate(.82);transition:transform .7s var(--sc-ease-out),filter .7s,opacity 420ms var(--sc-ease-out);will-change:transform}
 .img-band img:hover{filter:saturate(1.08);position:relative;z-index:2}
 .band-wrap{padding:40px 0;border-top:1px solid var(--line)}
 .band-wrap .kicker{display:block;text-align:center;margin-bottom:18px}
@@ -149,7 +149,7 @@ html[data-theme=dark] .mode-switch .ms-track{background:#3d3d3d}
 .cs-problem{max-width:760px;color:var(--muted);line-height:1.7;font-size:clamp(15px,1.6vw,18px);margin-top:18px}
 .cs-problem b{color:var(--blue);font-weight:700}
 .cs-duo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:26px 0 10px}
-.cs-duo article{border:1px solid var(--border);border-radius:16px;padding:30px;background:var(--surface);display:flex;flex-direction:column;gap:14px;transition:border-color .35s,transform .35s var(--sc-ease-out)}
+.cs-duo article{border:1px solid var(--border);border-radius:16px;padding:30px;background:var(--surface);display:flex;flex-direction:column;gap:14px;transition:border-color .35s,transform .35s var(--sc-ease-out),opacity 420ms var(--sc-ease-out),filter 520ms var(--sc-ease-out)}
 .cs-duo article:hover{transform:translateY(-3px)}
 .cs-duo .kicker{margin:0}
 .cs-duo p{margin:0;color:var(--muted);line-height:1.75;font-size:14.5px;flex:1}
@@ -166,7 +166,7 @@ html[data-theme=dark] .mode-switch .ms-track{background:#3d3d3d}
 @media(max-width:620px){.cs-decisions article{grid-template-columns:1fr;gap:8px}}
 .cs-results-wrap{margin-top:56px}
 .cs-results{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
-.cs-results div{border:1px solid var(--border);border-radius:14px;padding:22px 20px;background:var(--surface);transition:border-color .3s,transform .3s var(--sc-ease-out)}
+.cs-results div{border:1px solid var(--border);border-radius:14px;padding:22px 20px;background:var(--surface);transition:border-color .3s,transform .3s var(--sc-ease-out),opacity 420ms var(--sc-ease-out),filter 520ms var(--sc-ease-out)}
 .cs-results div:hover{border-color:var(--blue);transform:translateY(-3px)}
 .cs-results b{font:clamp(30px,4vw,46px)/1 var(--sc-font-display);color:var(--ink);display:block}
 .cs-results small{color:var(--muted);font:12px/1.5 'DM Mono';margin-top:8px;display:block}
@@ -176,7 +176,7 @@ html[data-theme=dark] .mode-switch .ms-track{background:#3d3d3d}
 .cs-quote b{font-size:14px}
 .cs-quote small{color:var(--muted);display:block;margin-top:2px;font-size:12.5px}
 .cs-next{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
-.cs-next-card{border:1px solid var(--border);border-radius:16px;background:var(--surface);padding:28px;display:flex;flex-direction:column;gap:12px;transition:border-color .35s,transform .35s var(--sc-ease-out),box-shadow .35s}
+.cs-next-card{border:1px solid var(--border);border-radius:16px;background:var(--surface);padding:28px;display:flex;flex-direction:column;gap:12px;transition:border-color .35s,transform .35s var(--sc-ease-out),box-shadow .35s,opacity 420ms var(--sc-ease-out),filter 520ms var(--sc-ease-out)}
 .cs-next-card:hover{border-color:var(--blue);transform:translateY(-4px);box-shadow:0 24px 60px #0009}
 .cs-next-card h3{font:clamp(24px,3vw,34px)/.95 var(--sc-font-display);margin:0;letter-spacing:-.01em}
 .cs-next-card:last-child{text-align:right;align-items:flex-end}
@@ -954,6 +954,12 @@ body{overflow-x:visible}
   --sc-accent:var(--blue);
   --sc-accent-ink:var(--fill-ink);
   --ring:2px solid var(--blue);
+
+  /* the alternating section tint, light: butter lifted a little toward sand, so
+     the band is a warmer cream than the page rather than a different colour */
+  --tint-from:var(--sand);
+  --tint-to:var(--butter);
+  --tint-ink:var(--chocolate);
 }
 html[data-theme=dark]{
   --bg:var(--earth);
@@ -981,6 +987,17 @@ html[data-theme=dark]{
   --sc-ink-soft:var(--muted);
   --sc-accent:var(--blue);
   --sc-accent-ink:var(--fill-ink);
+
+  /* --- the alternating section tint, in this theme ------------------------ */
+  /* The band is the site's PAPER in both themes: the same 9% sand into butter
+     the light theme paints on (which lands on #FBF5BE), with chocolate as its
+     ink. That is deliberate, because `--muted` on a band is 68% ink mixed toward
+     the band, and a dark band lifted off the earth instead (9% butter into earth)
+     would leave body copy at 3.4:1 — under the AA gate DESIGN.md §8 forbids
+     bypassing. The paper band clears it: ink 13.0:1, muted 4.9:1. */
+  --tint-from:var(--sand);
+  --tint-to:var(--butter);
+  --tint-ink:var(--chocolate);
 }
 
 /* --- buttons: marmalade -> fertile soil -> burnt toast -------------------- */
@@ -1033,17 +1050,17 @@ html[data-theme=dark]{
              0 12px 30px -18px color-mix(in srgb,var(--toast) 45%,transparent);
   transition:background-color .25s,border-color .25s,box-shadow .25s;
 }
-/* --- brand: monogram + stacked lockup ------------------------------------ */
+/* --- brand: logo mark + stacked lockup ----------------------------------- */
 .brand{display:inline-flex;align-items:center;gap:12px;justify-self:start;min-width:0}
-.brand i{
-  display:grid;place-items:center;flex:none;
+.brand-mark{
+  display:block;flex:none;
   width:36px;height:36px;border-radius:var(--r);
-  background:var(--fill);color:var(--fill-ink);
-  font:500 19px/1 var(--sc-font-display);letter-spacing:.01em;
+  object-fit:cover;object-position:50% 50%;
+  background:var(--fill);
   box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--toast) 14%,transparent);
-  transition:background-color .22s var(--sc-ease-out),color .22s;
+  transition:transform .22s var(--sc-ease-out);
 }
-.brand:hover i{background:var(--fill-hover);color:var(--butter)}
+.brand:hover .brand-mark{transform:scale(1.05)}
 .brand-txt{display:grid;gap:3px;min-width:0;line-height:1}
 .brand-txt b{font:600 13.5px/1 var(--sc-font-text);letter-spacing:.005em;white-space:nowrap}
 .brand-txt small{
@@ -1217,44 +1234,69 @@ html[data-theme=dark] .hero-portrait{box-shadow:0 24px 60px -30px #0009}
       hover is the light box.
    ========================================================================== */
 
-/* --- 1. ONE GROUND PER PAGE ---------------------------------------------- */
-/* RETIRED in v19. The grounds painted CONSECUTIVE sections in different
-   colours — sand, then powder, then slate, then powder again — so scrolling the
-   home page crossed from cream to tan to blue-grey to near-black and back. That
-   is the "I walked into a different website mid-scroll" failure: the ground
-   stopped being a canvas and became decoration competing with the work.
+/* --- 1. ALTERNATING GROUNDS, NOT NO GROUNDS -------------------------------- */
+/* CORRECTED. The earlier version of this block read the brief as "remove the
+   section colours" and set `background:transparent` with every token reset to
+   `inherit`, which flattened the whole page. The brief was to keep two
+   differently-coloured sections from sitting CONSECUTIVELY.
 
-   The attribute stays in the markup, because it still documents what a section
-   was *meant* to be, but it no longer paints. A section inherits the page's own
-   ground and its tokens, and the hairlines in `.section-line` do the separating
-   — which is what the craft floor already asked for: rows and hairlines carry
-   structure before boxes do.
+   `[data-ground="tint"]` is therefore a real, but deliberately QUIET, ground: it
+   is one step off the page canvas in the same hue family, so a tinted band
+   reads as a printed page turn rather than as a different website. Its tokens
+   are re-derived from ITS OWN ground (the lesson of DESIGN.md 16.2 — mixing
+   toward the wrong end produced 1.28:1 body text), so contrast is guaranteed
+   in both themes instead of being assumed.
 
-   Everything the v17 block used to re-derive per section is reset to `inherit`
-   here, so a leftover attribute cannot reintroduce a foreign ground. The
-   descendant rules that tinted chips, alt-buttons and case-row hovers are gone
-   with it; those elements now take the page's own accent and surfaces. */
+   The generator alternates these, so two tinted sections are never adjacent. */
 [data-ground]{
   position:relative;
-  background:transparent;
   color:inherit;
-  --ground:transparent;
-  --ground-ink:inherit;
-  --ground-mute:100%;
-  --ink:inherit;
-  --muted:inherit;
-  --blue:inherit;
-  --hair:inherit;
-  --hair-2:inherit;
-  --border:inherit;
-  --border-strong:inherit;
-  --dot:inherit;
-  --surface-1:inherit;
-  --surface-2:inherit;
-  --sc-canvas:inherit;
-  --sc-ink:inherit;
-  --sc-ink-soft:inherit;
+  /* the ground is computed FIRST, then every token is derived from it, so the
+     muted mix below mixes toward this band and not toward the page canvas */
+  --tint-ground:color-mix(in srgb,var(--tint-from) 9%,var(--tint-to));
+  background:var(--tint-ground);
+  /* every text token is re-derived from the tinted ground, never inherited from
+     the page, or body copy lands at 1.28:1 on the band */
+  --ink:var(--tint-ink);
+  --muted:color-mix(in srgb,var(--tint-ink) 68%,var(--tint-ground));
+  --text-soft:var(--tint-ink);
+  --hair:color-mix(in srgb,var(--tint-ink) 15%,transparent);
+  --hair-2:color-mix(in srgb,var(--tint-ink) 30%,transparent);
+  --border:color-mix(in srgb,var(--tint-ink) 22%,var(--tint-ground));
+  --border-strong:color-mix(in srgb,var(--tint-ink) 44%,var(--tint-ground));
+  --dot:color-mix(in srgb,var(--tint-ink) 15%,var(--tint-ground));
+  --surface-1:color-mix(in srgb,var(--tint-ink) 5%,transparent);
+  --surface-2:color-mix(in srgb,var(--tint-ink) 9%,transparent);
+  --sc-canvas:var(--tint-ground);
+  --sc-ink:var(--tint-ink);
+  --sc-ink-soft:var(--muted);
+
+  /* Two PAGE tokens are still wrong INSIDE a band, and in dark mode they are
+     invisible failures rather than near-misses:
+
+       `--blue`  the dark theme's accent is marmalade pulled toward butter
+                 (#FADB8D), which measures 1.2:1 on this paper band — every
+                 hovered index numeral, "Read the case study" label and arrow
+                 would vanish. On paper the accent is the light theme's own
+                 (#62380C), which measures 9.0:1 here, and `--sc-accent` follows
+                 it so the engine's accent is the same colour as the page's.
+       `--bg`    the archive card's overlay veil and the featured chip's text are
+                 both mixed from `--bg`. Left as the page's, dark mode would put
+                 the earth under the band's chocolate ink: the card's own heading
+                 over its veil measures 2.0:1 and the chip 2.0:1. In a band, the
+                 band is the page — so an inverted chip stays legible and the
+                 veil under copy is paper in both themes, as it already is in
+                 light. */
+  --bg:var(--tint-ground);
+  --blue:color-mix(in srgb,var(--marmalade) 30%,var(--toast));
+  --sc-accent:var(--blue);
 }
+[data-ground] .section-copy,
+[data-ground] .section-heading,
+[data-ground] .kicker{color:inherit}
+[data-ground] .kicker{color:var(--muted)}
+/* the ground must not fight the reveal: it is on the section, which is already
+   a full-width block, so no viewport maths is needed (DESIGN.md 16.1) */
 /* the panel used to bleed past the scrollbar; it is a section now, so the
    full-bleed hack is dropped. NOTE: `.process-stage` must NOT be in this rule —
    it is not a panel inside a column, it IS the column (the pinned act's
@@ -1350,9 +1392,18 @@ body[data-project] .cs-next-card:hover{border-color:color-mix(in srgb,var(--marm
    the generator. Here the flow reveal is shortened to match the new cadence
    and the rise is cut, so the motion reads as one gesture rather than a long
    fade the reader has to wait out. */
+/* `filter` was missing here and its absence was silent. A `transition` shorthand
+   REPLACES the whole list, so writing this rule with only opacity+transform threw
+   away the `filter 620ms` that v4 had put on the same selector — and blur is the
+   one property the reveal cannot work without. `filter:blur(5px)` sat at
+   opacity 0, snapped to `blur(0)` on the same frame `.sc-in` landed, and resolved
+   while the element was still invisible. The scroll-appear blur had been
+   contributing nothing on any page. It is back, and given a slightly longer
+   duration than the rise so the focus pulls rather than snaps. */
 [data-sc-in],[data-sc-stagger] > *{
   transform:translate3d(0,10px,0);
-  transition:opacity 420ms var(--sc-ease-out),transform 420ms var(--sc-ease-out);
+  transition:opacity 420ms var(--sc-ease-out),transform 420ms var(--sc-ease-out),
+             filter 520ms var(--sc-ease-out);
 }
 [data-sc-in].sc-in,[data-sc-stagger] > .sc-in{transform:none}
 @media(prefers-reduced-motion:reduce){
@@ -1679,4 +1730,305 @@ body[data-project] .project-detail-hero{background:var(--bg)}
 @media (max-width:760px){
   .mode-switch{right:12px;bottom:12px}
 }
+
+/* ============================================================================
+   v20 — THE HOVERED PROJECT IS THE ONE THAT ENLARGES
+   Two reported defects, one shared cause: the size of a project was decided by
+   its POSITION in the list rather than by the pointer.
+
+   1. Only the first project grew. `.case-row.is-lead` was written onto row 0 by
+      the generator, and it granted that row a wider plate, a 16:9 thumb and a
+      much larger title — permanently, at rest. So the top project always read
+      as the featured one and the other four looked like footnotes, and no row
+      responded to the pointer at all. `is-lead` is gone from the generator;
+      every row is now identical at rest, and the enlargement is a hover state.
+   2. Nothing enlarged on hover. `.case-row:hover` only tinted a background, and
+      v11 had deliberately cancelled the image transforms, so the list was inert.
+
+   The enlarge is on the ROW (a lift plus a shadow) and on the THUMB (a scale
+   inside its own overflow:hidden frame, which is why the image can grow without
+   ever breaking the grid). The title, the index and the arrow all move together,
+   so the whole row reads as one object responding rather than a picture
+   changing on its own. Scoped to `:hover` AND `:focus-visible`, so the same
+   enlargement is reachable from the keyboard.
+
+   Guarded by prefers-reduced-motion: the earlier global rule zeroes durations
+   but not the transform, so a reader who asked for no motion would still get
+   the scale. It is switched off explicitly here.
+   ========================================================================= */
+
+/* `.is-lead` is no longer emitted, but the retired rules are neutralised rather
+   than deleted, so an older cached page cannot reintroduce a permanently larger
+   first row while this stylesheet reloads. */
+.case-row.is-lead{grid-template-columns:38px minmax(150px,210px) minmax(0,1fr) 152px;padding-top:26px}
+.case-row.is-lead .thumb{aspect-ratio:4/3}
+.case-row.is-lead h3{font-size:inherit}
+
+.case-row{
+  border-radius:var(--r);
+  /* the lift and the shadow are the enlargement; the tint alone was too quiet
+     to read as "this one" */
+  /* `opacity` and `filter` are in this list on purpose, and this is a fix rather
+     than a preference. A `transition` shorthand REPLACES the whole list, and
+     v20 sits after the reveal in source order at equal specificity — so writing
+     the hover list without them deleted the reveal's own opacity transition from
+     every row in every work list. The visible result was the exact opposite of
+     choreography: a row jumped from opacity 0 to 1 INSTANTLY on the frame
+     `.sc-in` landed, because a property absent from `transition-property` is not
+     transitioned at all and `transition-delay` does not apply to it either. The
+     130ms stagger was therefore doing nothing on the five project rows, while
+     their 10px rise — which IS in this list — was still delayed and animated. So
+     the rows appeared fully opaque and then slid up, staggered. */
+  transition:transform .4s var(--sc-ease-out),box-shadow .4s var(--sc-ease-out),
+             background-color .3s var(--sc-ease-out),opacity 420ms var(--sc-ease-out),
+             filter 520ms var(--sc-ease-out);
+}
+.case-row .thumb img{transition:filter .45s,transform .55s var(--sc-ease-out)}
+.case-row h3{transition:color .3s var(--sc-ease-out),letter-spacing .4s var(--sc-ease-out)}
+
+/* the hover itself. `:focus-visible` is included so the state is reachable
+   without a pointer; `:hover` alone would strand keyboard users. */
+@media (hover:hover){
+  .case-row:hover{transform:translateY(-4px)}
+}
+.case-row:hover,
+.case-row:focus-visible{
+  background:color-mix(in srgb,var(--ink) 4%,transparent);
+  box-shadow:0 18px 40px -22px color-mix(in srgb,var(--toast) 70%,transparent);
+}
+.case-row:hover .thumb img,
+.case-row:focus-visible .thumb img{
+  transform:scale(1.06);
+  filter:saturate(1.05);
+}
+.case-row:hover .thumb,
+.case-row:focus-visible .thumb{border-color:var(--hair-2)}
+.case-row:hover h3,
+.case-row:focus-visible h3{color:var(--ink)}
+.case-row:hover .go,
+.case-row:focus-visible .go{color:var(--blue)}
+
+/* a reader who asked for no motion gets the tint and the border, never the
+   movement. `transform:none` is required: the global reduced-motion rule only
+   shortens durations, so the scale would otherwise still play. */
+@media (prefers-reduced-motion:reduce){
+  .case-row:hover,
+  .case-row:focus-visible{transform:none;box-shadow:none}
+  .case-row:hover .thumb img,
+  .case-row:focus-visible .thumb img{transform:none}
+}
+
+/* --- the same enlargement on the projects page archive cards -------------- */
+/* These are the two non-flagship cards that close /projects/ (Afri Buna and
+   Dream, Faith, Journey), and they carried the same defect in mirror image: the
+   base block grew the plate on hover, v11 cancelled that transform and left only
+   the opacity dip, so the card dimmed under the pointer instead of coming
+   forward. The card lifts and its plate scales inside the card's own
+   `overflow:hidden` frame, exactly as a row does, so nothing reflows.
+
+   The image transform is stated again on purpose, against v11's cancellation:
+   that rule exists to stop a hover transform from shifting layout, and a plate
+   that is absolutely positioned inside a clipping card cannot shift anything.
+   Opacity keeps v11's 0.66 on hover — copy sits on the plate, so the plate must
+   not brighten under the text. */
+.project-card{
+  /* `opacity` restored for the same reason as `.case-row` above: this shorthand
+     was replacing the reveal's list and leaving the two archive cards on
+     /projects/ snapping in with no stagger. */
+  transition:transform .4s var(--sc-ease-out),box-shadow .4s var(--sc-ease-out),
+             border-color .4s var(--sc-ease-out),background-color .4s,
+             opacity 420ms var(--sc-ease-out),filter 520ms var(--sc-ease-out);
+}
+.project-card img{transition:filter .45s,transform .55s var(--sc-ease-out),opacity .4s}
+@media (hover:hover){
+  .project-card:hover{transform:translateY(-4px)}
+}
+.project-card:hover,
+.project-card:focus-visible{
+  border-color:var(--hair-2);
+  box-shadow:0 20px 44px -24px color-mix(in srgb,var(--toast) 70%,transparent);
+}
+.project-card:hover img,
+.project-card:focus-visible img{transform:scale(1.04);opacity:.66;filter:saturate(1.05)}
+@media (prefers-reduced-motion:reduce){
+  .project-card:hover,
+  .project-card:focus-visible{transform:none;box-shadow:none}
+  .project-card:hover img,
+  .project-card:focus-visible img{transform:none}
+}
+
+/* ============================================================================
+   v21 — WHY THE SITE LOOKED LIKE IT HAD NO MOTION
+   Four defects, all of them the same mistake in four different places: a rule
+   that was written to do one thing silently cancelled the reveal, so the only
+   thing left on screen was a plain fade. Measured in a real browser before this
+   pass: 18 reveal targets on the home page, 5 of them with no opacity in their
+   computed `transition`, a blur that snapped instead of resolving, and two
+   pinned acts with 450px and 540px of total scrub travel.
+
+   1. A STAGGER CONTAINER WAS FADING ITSELF, AND THEREFORE ITS OWN CHILDREN.
+   2. THE PINNED ACTS HAD NO TRAVEL TO SPEND.
+   3. THE PINNED STEPS HAD NO CHOREOGRAPHY, ONLY A ONE-PIXEL RULE.
+   4. (fixed above) THE BLUR AND THE STAGGER HAD BEEN DELETED BY SHORTHANDS.
+   ========================================================================= */
+
+/* --- 1. the stagger container is a TRIGGER, not a reveal target ------------ */
+/* The engine observes `[data-sc-in]` and, on entry, adds `.sc-in` to the element
+   AND staggers its direct children. A container therefore wears two hats: it is
+   the thing IntersectionObserver watches, and it is also a reveal target in its
+   own right. But it is a transparent box — the content is its children — so
+   fading the box fades the children too, and that fade is a CEILING on the whole
+   sequence.
+
+   This is why a five-row work list never read as a sequence. The container began
+   its own 0 -> 1 opacity ramp the instant the section entered, over 420ms. Child
+   0 started at 0ms, child 4 at 520ms. So by the time row 4 was due to begin,
+   the container was already ~100% opaque and the stagger had nothing left to
+   reveal. Every row arrived into full view and the delays were invisible.
+
+   Measured, before: container opacity 0.31 while child 4 was still waiting. A
+   130ms stagger cannot be seen through a 420ms parent fade, and shortening the
+   parent is not the fix — the parent should not be animating at all.
+
+   So a container that staggers stops being a reveal target for its OWN opacity
+   and rise, and stays one for `filter`. The filter is kept deliberately: blur is
+   not gated by the container's opacity, so the list still pulls into focus as a
+   whole on arrival — which is the v4 effect, and the thing that makes a section
+   feel like it is being handed to you rather than switched on.
+
+   `transform:none` for the same reason as opacity: the container must not carry
+   the 10px rise, or the whole list slides in as one object on top of the
+   per-child rise. */
+[data-sc-in][data-sc-stagger]{
+  opacity:1;
+  transform:none;
+}
+
+/* Belt and braces for the one case the rule above cannot see: a stagger container
+   whose direct children are NOT elements. `[data-sc-stagger] > *` then matches
+   nothing, so nothing is ever hidden, and the container must not be left at
+   opacity 0 by a stylesheet that did not load. The engine's no-IntersectionObserver
+   fallback reveals everything; this keeps that true under a partial CSS load. */
+[data-sc-in][data-sc-stagger]:not(:has(> *)){opacity:1;transform:none;filter:none}
+
+/* --- 1b. the page titles, one word at a time ------------------------------- */
+/* `display:inline-block` is not optional: a transform does not apply to a
+   non-replaced inline box, so without it the staggered children would rise as a
+   single line and the per-word timing would be invisible. The class also has to
+   outrank the v2 block's `.page-hero h1 span, .project-detail-hero h1
+   span{display:block}`, which would otherwise put one word on each line and
+   roughly triple the height of every title on the site. */
+.page-hero h1 .kt-w,
+.project-detail-hero h1 .kt-w,
+.article h1 .kt-w{
+  display:inline-block;
+  /* a word must never break across lines, and one very long word must not be
+     able to push a title onto a single orphaned line */
+  white-space:nowrap;
+}
+
+/* --- 2. the pinned act needs travel to spend -------------------------------- */
+/* `travel = sectionHeight - stageHeight`, and the stage is `height:100svh`. So
+   the travel is `(span - 1) * 100vh` and NOTHING ELSE. The old spans were 1.5
+   (home, three steps) and 1.6 (/about/, five steps), which bought 0.5 and 0.6
+   of a screen — 450px and 540px.
+
+   That is the whole budget for the act's entire choreography. The rail under the
+   heading went from empty to full inside 450px of scrolling, each step's rule
+   filled over 1/6 of that (the `* 6` multiplier below is a fraction of the
+   window, not a duration), and then the act held still for the remaining 900px of
+   section while the reader scrolled past a frozen progress bar. On /about/ five
+   steps had 540px between them. At a normal wheel notch that is four or five
+   clicks, so the one large effect the site is built around was over before it was
+   noticed.
+
+   The spans are raised in build_site.mjs to give ~1.8 screens of travel for three
+   steps and ~2.2 for five — roughly 600px per step, which is long enough to read
+   a step arrive, light and hold before the next one starts. What that costs is
+   page length, and that is the right trade: the act is the site's one piece of
+   scroll choreography and it was being given 6% of a screen.
+
+   This block only re-times the rule fill, which was tuned against the old,
+   useless travel. `(p - at) * 6` filled each step's rule in 1/6 of the window, so
+   with 1.8 screens of travel each rule drew itself over ~300px. Held to 8, the
+   draw lands closer to the centre of each step's own stretch of the rail and the
+   sequence has a beat per step instead of a flash. */
+@media (min-width:861px){
+  [data-sc-act="pin"] .steps>article::before{
+    transform:scaleX(clamp(0,calc((var(--sc-p,0) - var(--sc-at,0)) * 8),1));
+  }
+}
+
+/* --- 3. the steps themselves, not just the rule above them ------------------ */
+/* `--sc-at` drove a 2px line and nothing else, so a pinned act was a static
+   three-column grid with a progress bar beside it. The cards never changed state
+   at all: every step sat at full strength for the entire pin, and the rail was
+   the only thing telling the reader where they were.
+
+   Each step now LIGHTS as its own stretch of the rail passes, using the same
+   `--sc-at` slot the rule already uses, so the line and the card agree.
+
+   Deliberately COLOUR, not opacity or transform. Both of those are already
+   transitioned on these elements for the arrival reveal, and a scroll-linked
+   value fighting a 420ms transition is how you get a section that is briefly
+   invisible after a scrollbar drag. Colour is in no transition list here, so it
+   tracks the pin exactly, and it cannot hide anything: an unlit step is muted
+   copy on the page ground, which is where a not-yet-reached step should be.
+
+   `--sc-lit` is the same `clamp()` the rule uses, so the card's state and its
+   line's length are the same number. `opacity` on the muted copy is what carries
+   it, because `--muted` is already a mix toward the ground and a second mix on
+   top of it would drift off-palette in dark mode. */
+[data-sc-act="pin"] .steps>article{
+  --sc-lit:clamp(0,calc((var(--sc-p,0) - var(--sc-at,0)) * 8),1);
+}
+/* The numeral leads the change and the rule above it fills: between them they
+   say which step is current without dimming anything the reader is trying to
+   read. `--blue` is the site's own hover numeral on a case row, so an unlit
+   numeral in `--muted` and a lit one in `--blue` is the same pair the work lists
+   already use. */
+[data-sc-act="pin"] .steps>article .n{
+  color:color-mix(in srgb,var(--blue) calc(var(--sc-lit,0) * 100%),var(--muted));
+  transition:color .3s var(--sc-ease-out);
+}
+[data-sc-act="pin"] .steps>article h3{
+  color:color-mix(in srgb,var(--ink) calc(30% + var(--sc-lit,0) * 70%),var(--muted));
+}
+/* The resting floor is 0.68, not lower, and that is a correction rather than a
+   preference. `p` is 0 for the act's ENTIRE entry slide — a full viewport of
+   scrolling before the pin engages — so a floor of 0.42 meant the section
+   scrolled up dimmed, which is the "the act loaded blank" defect DESIGN.md 17.1
+   already recorded once and had to be fixed. An arriving reader must be able to
+   read the whole thing.
+
+   So the sequence is carried by COLOUR and by the rule, which can dim a heading
+   to `--muted` — a token the page already uses for secondary copy, and therefore
+   a legible de-emphasis — rather than by a heavy opacity dip on the body. 0.68
+   still gives a visible 1.47x range across the three columns without putting
+   unreadable text on screen at any scroll position. */
+[data-sc-act="pin"] .steps>article p{
+  opacity:calc(.68 + var(--sc-lit,0) * .32);
+}
+/* the icon leads too — it is the first thing the eye lands on in each column */
+[data-sc-act="pin"] .steps>article .ic{
+  color:color-mix(in srgb,var(--ink) calc(40% + var(--sc-lit,0) * 60%),var(--muted));
+  transform:scale(calc(1 + var(--sc-lit,0) * .08));
+  transform-origin:0 88%;
+  transition:transform .5s var(--sc-ease-out);
+}
+
+/* Mobile already un-pins the act (the five-column grid will not fit a 100svh
+   stage), so `--sc-p` never advances and every step would sit permanently
+   unlit at 42% copy. The choreography is a scroll effect; where the scroll
+   effect does not exist, the resting state has to be the lit one. */
+@media (max-width:860px){
+  [data-sc-act="pin"] .steps>article{--sc-lit:1}
+}
+/* Same for a reader who asked for no motion: the rail is progress, not
+   decoration, so it is shown settled and every step is shown lit. */
+@media (prefers-reduced-motion:reduce){
+  [data-sc-act="pin"] .steps>article{--sc-lit:1}
+  [data-sc-act="pin"] .steps>article .ic{transform:none}
+}
+
 
