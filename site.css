@@ -2569,11 +2569,10 @@ img[data-sc-in].sc-in{transform:none}
 .frame-screen.showcase-screen{height:auto;max-height:none}
 
 /* ============================================================================
-   v24 - THE HERO AS A FULL-BLEED STUDIO SHOT
+   v24 - THE HERO AS A FULL-BLEED STUDIO SHOT, SPLIT AT THE WAIST
    The reference, confirmed against the brief: a grey studio plate with the
-   subject photographed centred inside it, a frosted glass panel across the
-   BOTTOM HALF carrying the words, warm orange as the only accent, everything
-   white and small, and NO control bar along the edge.
+   subject photographed centred inside it, warm orange as the only accent,
+   everything white and small, and NO control bar along the edge.
 
    The v24 card is withdrawn -- the brief turned out to be full-bleed, with the
    subject centred on grey, so the card's border and radius were the wrong
@@ -2586,11 +2585,20 @@ img[data-sc-in].sc-in{transform:none}
       centred, so the subject sits where the reference's statue sits -- behind
       the glass and above it, cut by it.
 
-   2. THE GLASS. `top:50%`, border-radius 0, hairline top edge. Same
+   2. THE WORDS ARE SPLIT, and that is the whole layout. The headline lives on
+      the PLATE at the top (`.hero-top`), under the scrim the nav pill already
+      needs, so the plate opens with the promise; the identity line, the
+      description and the actions live on the GLASS at the bottom, so the glass
+      closes with who is making the promise. The first v24 pass had these the
+      other way round; the brief inverted them.
+
+   3. THE GLASS. `top:50%`, border-radius 0, hairline top edge. Same
       construction as before and for the same reason: a blur alone over a
-      photograph cannot carry 14px white text, so the frost is blur PLUS a grey
+      photograph cannot carry 13.5px white text, so the frost is blur PLUS a grey
       near-black wash that is darkest at the bottom edge, where the hero meets
-      the next section. Contrast held for every size on it.
+      the next section. Contrast held for every size on it. The two columns on
+      it are separated by a real gap -- the right-hand column is a separate
+      statement about identity and availability, not a caption glued to the copy.
 
    3. SMALL, WHITE, ONE ACCENT. Label sizes throughout -- 11px kicker, 13.5px
       description, 12px buttons, 10.5px tags. The headline is 28-44px, which is
@@ -2617,10 +2625,12 @@ img[data-sc-in].sc-in{transform:none}
 /* the v2 clipped polygon wash -- the stage IS the ground now */
 .hero::before{display:none}
 /* nav pill sits on the photograph: a scrim keeps its own silhouette dark-safe.
-   This is the only rule v24 kept from the card, and it moved to the section. */
+   The headline now lives on the plate too, so the scrim is deeper and reaches
+   further down than the nav alone needs -- white display type on a photograph
+   is a contrast problem, not a decoration problem. */
 .hero::after{
   content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:linear-gradient(180deg,rgba(10,10,10,.5) 0%,rgba(10,10,10,.12) 14%,transparent 26%);
+  background:linear-gradient(180deg,rgba(10,10,10,.62) 0%,rgba(10,10,10,.32) 12%,transparent 30%);
 }
 
 /* --- 1. the stage: subject centred, full bleed ----------------------------- */
@@ -2641,7 +2651,20 @@ img[data-sc-in].sc-in{transform:none}
 /* the horizon hairline lands on the glass edge: the clearest read of depth */
 .hero-horizon{left:0;top:50%;width:100%}
 
-/* --- 2. the frost across the lower half ------------------------------------ */
+/* --- 2a. the words on the plate -------------------------------------------- */
+.hero-top{
+  position:absolute;z-index:2;top:0;left:0;right:0;
+  padding:clamp(84px,11vh,124px) 0 0;
+}
+.hero-top h1{
+  margin:0;max-width:16ch;
+  font:400 clamp(28px,3.4vw,44px)/1.04 var(--sc-font-display);
+  letter-spacing:-.01em;color:#fff;
+  text-shadow:0 2px 30px rgba(0,0,0,.45);
+}
+.hero-top h1 em{font-style:normal;color:var(--marmalade)}
+
+/* --- 2b. the words on the glass -------------------------------------------- */
 .hero-glass{
   position:absolute;z-index:2;left:0;right:0;bottom:0;top:50%;
   display:flex;align-items:flex-end;
@@ -2664,9 +2687,11 @@ img[data-sc-in].sc-in{transform:none}
   }
 }
 
+/* the two columns are two statements, so they are given room; the left one is
+   the copy, the right one is identity and availability */
 .hero-paste{
-  display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,.8fr);
-  gap:clamp(20px,3vw,52px);align-items:end;width:100%;
+  display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.78fr);
+  gap:clamp(32px,4.6vw,80px);align-items:end;width:100%;
 }
 .hero-side{display:grid;gap:11px;min-width:0}
 .hero-cap{
@@ -2690,12 +2715,6 @@ img[data-sc-in].sc-in{transform:none}
 /* --- 3. the words: small, white, one accent -------------------------------- */
 .hero-glass .kicker{color:var(--marmalade);margin:0 0 13px}
 .hero-glass .kicker::before{background:color-mix(in srgb,var(--marmalade) 60%,transparent)}
-.hero-glass h1{
-  margin:0 0 12px;max-width:16ch;
-  font:400 clamp(28px,3.4vw,44px)/1.04 var(--sc-font-display);
-  letter-spacing:-.01em;color:#fff;
-}
-.hero-glass h1 em{font-style:normal;color:var(--marmalade)}
 .hero-glass .hero-desc{
   margin:0;max-width:46ch;font-size:13.5px;line-height:1.66;
   color:rgba(255,255,255,.84);
@@ -2711,6 +2730,7 @@ img[data-sc-in].sc-in{transform:none}
 @media(max-width:720px){
   .hero{min-height:92svh}
   .hero-portrait{object-position:50% 12%}
+  .hero-top{padding:82px 0 0}
   .hero-glass{
     top:46%;padding:20px 0 22px;
     background:linear-gradient(180deg,
@@ -2718,11 +2738,71 @@ img[data-sc-in].sc-in{transform:none}
       rgba(22,22,22,.76) 40%,
       rgba(12,12,12,.86) 100%);
   }
-  .hero-paste{grid-template-columns:1fr;gap:14px;align-items:start}
-  .hero-glass h1{font-size:clamp(26px,7.6vw,36px);max-width:none}
+  .hero-paste{grid-template-columns:1fr;gap:16px;align-items:start}
   .hero-glass .hero-desc{font-size:13px}
   .hero-glass .hero-actions{margin-top:15px}
   .hero-side{gap:9px}
 }
+
+/* ============================================================================
+   v25 - THE THEME TOGGLE MOVES INTO THE NAV, AND IT IS IMPOSSIBLE TO MISS
+   For nine versions it was a fixed glass pill bottom-right -- the one place a
+   reader never looks for a setting. It is now the last control inside the nav
+   pill, top-right, where every other control on the site already lives.
+
+   It is FILLED, not glass. The nav pill around it is already glass, and a
+   glass switch on a glass bar is invisible; a filled switch on the same bar is
+   the brightest thing in it. The fill is the site's own accent (marmalade) and
+   it is the same fill as the hero's primary button, so the brightest thing on
+   the nav is the same signal as the brightest thing in the hero. Ink flips to
+   burnt toast on it, which keeps the toggle's own contrast far above the pill
+   it sits in.
+
+   Scoped, not global. `position:fixed` etc. are set by three earlier blocks
+   (v7 line ~137, v12 line ~588, and the minified v1 line 110) and two of those
+   are `html[data-theme=dark]`-scoped, so they out-rank a plain class. Every
+   rule below is therefore written for BOTH scopes rather than assumed to win
+   on order -- and the track/knob geometry is re-derived for the smaller solid
+   pill: 28px track, 11px knob, 2px insets, 13px of travel.
+   ========================================================================= */
+.site-nav .mode-switch,
+html[data-theme=dark] .site-nav .mode-switch{
+  position:static;z-index:auto;
+  display:flex;align-items:center;gap:7px;
+  margin-left:8px;padding:6px 9px;
+  border-radius:var(--r);
+  background:var(--marmalade);
+  border:1px solid color-mix(in srgb,var(--toast) 26%,transparent);
+  box-shadow:0 1px 2px #00000026;
+  cursor:pointer;
+  transition:transform .18s var(--sc-ease-out),filter .2s var(--sc-ease-out);
+}
+.site-nav .mode-switch:hover,
+html[data-theme=dark] .site-nav .mode-switch:hover{transform:none;filter:brightness(1.09)}
+.site-nav .mode-switch:active,
+html[data-theme=dark] .site-nav .mode-switch:active{transform:scale(.95)}
+.site-nav .mode-switch .ms-opt,
+html[data-theme=dark] .site-nav .mode-switch .ms-opt{
+  font-size:11px;line-height:1;opacity:.6;color:var(--toast);
+}
+.site-nav .mode-switch .ms-track,
+html[data-theme=dark] .site-nav .mode-switch .ms-track{
+  width:28px;height:15px;flex:none;
+  background:color-mix(in srgb,var(--toast) 24%,transparent);
+}
+.site-nav .mode-switch .ms-knob,
+html[data-theme=dark] .site-nav .mode-switch .ms-knob{
+  top:2px;left:2px;width:11px;height:11px;
+  background:var(--toast);box-shadow:none;
+}
+html[data-theme=dark] .site-nav .mode-switch .ms-knob{transform:translateX(13px)}
+@media(max-width:860px){
+  /* the nav narrows to a contact link, the toggle and the menu button on
+     phones; the switch stays out, because it is the one control that has no
+     menu to hide in */
+  .site-nav .mode-switch{margin-left:6px;padding:6px 8px}
+}
+
+
 
 
