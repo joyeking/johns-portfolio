@@ -2463,6 +2463,7 @@ img[data-sc-in].sc-in{transform:none}
 .work-row-main{display:grid;gap:3px;min-width:0}
 .work-row-main .kind{font:var(--t-label)/1.6 'DM Mono';letter-spacing:.01em;color:var(--muted)}
 .work-row-main h3{margin:0;font:400 clamp(20px,1.9vw,28px)/1.14 var(--sc-font-display);letter-spacing:-.018em;transition:color .25s}
+.work-row-desc{display:block;margin-top:5px;max-width:58ch;color:var(--muted);font-size:var(--t-small,14px);line-height:1.55}
 .work-row-thumb{display:none}
 .work-row-meta{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}
 .work-row-go{display:inline-flex;color:var(--muted);transition:color .25s,transform .3s var(--sc-ease-out)}
@@ -2566,3 +2567,162 @@ img[data-sc-in].sc-in{transform:none}
    it. The live-preview frame keeps its fixed window — that one loads a real
    iframe, which is a window by nature. */
 .frame-screen.showcase-screen{height:auto;max-height:none}
+
+/* ============================================================================
+   v24 - THE HERO AS A FULL-BLEED STUDIO SHOT
+   The reference, confirmed against the brief: a grey studio plate with the
+   subject photographed centred inside it, a frosted glass panel across the
+   BOTTOM HALF carrying the words, warm orange as the only accent, everything
+   white and small, and NO control bar along the edge.
+
+   The v24 card is withdrawn -- the brief turned out to be full-bleed, with the
+   subject centred on grey, so the card's border and radius were the wrong
+   container and a bar with no content behind it was decoration. The card is
+   left in the file only where a rule is still load-bearing for the full-bleed
+   layout below; every rule it kept is commented with what it is doing now.
+
+   1. THE STAGE. The hero is the full viewport and nothing else: grey studio
+      plate, no padding, no card. The portrait is the ENTIRE stage background,
+      centred, so the subject sits where the reference's statue sits -- behind
+      the glass and above it, cut by it.
+
+   2. THE GLASS. `top:50%`, border-radius 0, hairline top edge. Same
+      construction as before and for the same reason: a blur alone over a
+      photograph cannot carry 14px white text, so the frost is blur PLUS a grey
+      near-black wash that is darkest at the bottom edge, where the hero meets
+      the next section. Contrast held for every size on it.
+
+   3. SMALL, WHITE, ONE ACCENT. Label sizes throughout -- 11px kicker, 13.5px
+      description, 12px buttons, 10.5px tags. The headline is 28-44px, which is
+      the one place the reference lets type say anything: everything above it is
+      a label and everything below it is a label. Marmalade is the accent on the
+      kicker, the emphasized word and the primary button only -- the reference's
+      brass highlight -- and the ghost button is glass, not a border.
+
+   4. NO BAR. The v24 bottom bar is deleted, including its markup. A bar with
+      nothing behind it is furniture.
+   ========================================================================= */
+
+.hero{
+  position:relative;
+  min-height:100svh;
+  display:grid;
+  align-content:end;
+  padding:0;
+  overflow:hidden;
+  /* grey studio plate: reads even where the photo is dark, and is the mat the
+     subject sits on */
+  background:linear-gradient(180deg,#2c2c2c 0%,#232323 58%,#191919 100%);
+}
+/* the v2 clipped polygon wash -- the stage IS the ground now */
+.hero::before{display:none}
+/* nav pill sits on the photograph: a scrim keeps its own silhouette dark-safe.
+   This is the only rule v24 kept from the card, and it moved to the section. */
+.hero::after{
+  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(10,10,10,.5) 0%,rgba(10,10,10,.12) 14%,transparent 26%);
+}
+
+/* --- 1. the stage: subject centred, full bleed ----------------------------- */
+.hero-media{position:absolute;inset:0;z-index:0;display:block}
+.hero-portrait{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;object-position:50% 16%;
+  border:0;border-radius:0;max-width:none;aspect-ratio:auto;
+  filter:grayscale(.14) contrast(1.05);
+  box-shadow:none;
+}
+/* the glow is low and centred behind the figure. Centred by
+   `left:0;right:0;margin-inline:auto` rather than `transform:translateX(-50%)`:
+   this span carries `data-sc-parallax`, so the engine's per-frame inline
+   transform would discard the centring transform -- the animation-vs-inline
+   bug documented at the top of this file's hero, one level down. */
+.hero-glow{inset:auto 0 10% 0;margin-inline:auto;width:min(46%,400px)}
+/* the horizon hairline lands on the glass edge: the clearest read of depth */
+.hero-horizon{left:0;top:50%;width:100%}
+
+/* --- 2. the frost across the lower half ------------------------------------ */
+.hero-glass{
+  position:absolute;z-index:2;left:0;right:0;bottom:0;top:50%;
+  display:flex;align-items:flex-end;
+  padding:clamp(22px,2.8vw,38px) 0 clamp(26px,3vw,44px);
+  border-top:1px solid rgba(255,255,255,.15);
+  border-radius:0;
+  background:linear-gradient(180deg,
+    rgba(44,44,44,.34) 0%,
+    rgba(26,26,26,.7) 46%,
+    rgba(14,14,14,.82) 100%);
+  -webkit-backdrop-filter:blur(20px) saturate(1.55);
+  backdrop-filter:blur(20px) saturate(1.55);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .hero-glass{
+    background:linear-gradient(180deg,
+      rgba(22,22,22,.9) 0%,
+      rgba(16,16,16,.96) 46%,
+      rgba(12,12,12,.98) 100%);
+  }
+}
+
+.hero-paste{
+  display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,.8fr);
+  gap:clamp(20px,3vw,52px);align-items:end;width:100%;
+}
+.hero-side{display:grid;gap:11px;min-width:0}
+.hero-cap{
+  display:flex;align-items:center;gap:9px;margin:0;
+  font:var(--t-label)/1.5 'DM Mono';letter-spacing:.01em;color:rgba(255,255,255,.74);
+}
+.hero-cap .ic{width:14px;height:14px;flex:none}
+.hero-tags{display:flex;flex-wrap:wrap;gap:6px}
+.hero-tag{
+  border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:7px 11px;
+  font:600 10.5px/1 'DM Mono';letter-spacing:.05em;text-transform:uppercase;
+  color:rgba(255,255,255,.8);
+}
+.hero-tag.dot-live{display:inline-flex;align-items:center;gap:7px}
+.hero-tag.dot-live::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:var(--marmalade);flex:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--marmalade) 18%,transparent);
+}
+
+/* --- 3. the words: small, white, one accent -------------------------------- */
+.hero-glass .kicker{color:var(--marmalade);margin:0 0 13px}
+.hero-glass .kicker::before{background:color-mix(in srgb,var(--marmalade) 60%,transparent)}
+.hero-glass h1{
+  margin:0 0 12px;max-width:16ch;
+  font:400 clamp(28px,3.4vw,44px)/1.04 var(--sc-font-display);
+  letter-spacing:-.01em;color:#fff;
+}
+.hero-glass h1 em{font-style:normal;color:var(--marmalade)}
+.hero-glass .hero-desc{
+  margin:0;max-width:46ch;font-size:13.5px;line-height:1.66;
+  color:rgba(255,255,255,.84);
+}
+.hero-glass .hero-actions{margin-top:18px;gap:10px}
+.hero-glass .button{padding:10px 15px;font-size:12px;background:var(--marmalade);color:var(--toast)}
+.hero-glass .button:hover{background:var(--marmalade)}
+.hero-glass .button.alt{
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.3);color:#fff;
+}
+.hero-glass .button.alt:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5)}
+
+@media(max-width:720px){
+  .hero{min-height:92svh}
+  .hero-portrait{object-position:50% 12%}
+  .hero-glass{
+    top:46%;padding:20px 0 22px;
+    background:linear-gradient(180deg,
+      rgba(40,40,40,.38) 0%,
+      rgba(22,22,22,.76) 40%,
+      rgba(12,12,12,.86) 100%);
+  }
+  .hero-paste{grid-template-columns:1fr;gap:14px;align-items:start}
+  .hero-glass h1{font-size:clamp(26px,7.6vw,36px);max-width:none}
+  .hero-glass .hero-desc{font-size:13px}
+  .hero-glass .hero-actions{margin-top:15px}
+  .hero-side{gap:9px}
+}
+
+
