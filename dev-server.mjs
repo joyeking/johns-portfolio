@@ -23,6 +23,14 @@ const TYPES = {
   '.webp': 'image/webp',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
+  // sitemap.xml is build output that is committed and deployed. Without an entry
+  // here it falls through to application/octet-stream, which Chrome DOWNLOADS
+  // instead of rendering — so the route appears broken in preview (navigation
+  // to it throws) even though the bytes are served correctly. GitHub Pages sends
+  // application/xml, so this is also the type a local validator will see in
+  // production and should see here.
+  '.xml': 'application/xml; charset=utf-8',
+  '.txt': 'text/plain; charset=utf-8',
 };
 
 const server = createServer(async (req, res) => {
@@ -54,5 +62,5 @@ const server = createServer(async (req, res) => {
 
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`johns-portfolio served from ${ROOT}`);
-  console.log(`  → http://localhost:${PORT}/`);
+  console.log(`  -> http://localhost:${PORT}/`);
 });

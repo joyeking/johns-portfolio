@@ -902,3 +902,133 @@ For v21 specifically, measured in a real browser:
 
 
 
+
+## 19. v22 — the word is the unit, and the pointer picks the row
+
+Ported from a reference landing page supplied for this pass, against a brief of
+"the effects, transitions of sections and animations". Scope was agreed before
+the work: the motion is taken wholesale, the design language is not. The
+reference's dark photographic card grid, its oversized italic display face and its
+gradient-masked soft dividers were all left alone, because each contradicts a
+rule this site set deliberately — "rows and hairlines carry structure before
+boxes do", "never a card", MOTION_INTENSITY 4. One addition beyond the motion
+was agreed separately and is documented with its trade-off below.
+
+What was taken is the *idea* and the measured shape of the curve. Nothing is
+lifted: the implementation is written against this site's own reveal machinery
+and its own ease token.
+
+### 1. The display-type reveal, split to the word
+
+The reference splits every display heading into `inline-block` words that each
+rise and un-blur in sequence. Measured on it: `opacity 0.001 -> 1` and
+`filter blur(10px) -> blur(0px)` together, ~800ms, on a strongly front-loaded
+ease (opacity 0.52 at 25% of the ramp, 0.89 at 50%, 0.95 at 75%).
+
+The idea is worth taking because **a block reveal is one event — the heading is
+either there or it is not — while a word reveal is a line being written.** This
+site had the split for its page titles (v21, `.kt-w`) and not for its section
+headings, so the one piece of motion that reads most clearly was on the h1s only.
+All 18 `.section-heading`s are converted now, in a single pass over the finished
+body (`wordSplitHeadings()`) rather than 18 hand-edited call sites, because a
+heading somebody forgets to convert is exactly how this rots.
+
+Two consequences had to be handled:
+
+- **The heading gives up its own blur.** Each word blurs individually, so a
+  container blur as well would compound to a 20px start through the ancestor and
+  the line would arrive as a smudge. Scoped by `:has(.kt-w)` rather than applied
+  to every stagger container, because the work lists ARE stagger containers and
+  want the opposite — one whole-list focus pull with their rows rising unfocused
+  inside it.
+- **The blur stays off stagger children generally.** v4 put it on `[data-sc-in]`
+  only, and that is still right: a stagger child is usually a work-list row or a
+  gallery plate, and un-blurring five 400px photographs is a smear, not a focus
+  pull, at the cost of a full-size filter layer per row.
+
+### 2. The curve, retuned
+
+The reveal moves from v21's 5px / 520ms blur and 420ms fade to **10px / 680ms
+blur and 560ms fade**. The change is the distance travelled and the length of the
+resolve, not the mechanism: at 5px a heading goes from soft to sharp before the
+eye has finished travelling to it, which is why the effect read as a fade with a
+filter on it. `--sc-ease-out` is already the same front-loaded shape the
+reference uses, so the ease token is unchanged.
+
+### 3. The hero, in two planes
+
+The reference hero is a three-layer illustration whose background, middleground
+and foreground move at different rates. The engine has shipped a
+`data-sc-parallax` device since v1 and this site had never used it; it resolves
+only inside a `[data-sc-act]`, and the hero already is one, so this needed markup
+rather than new machinery.
+
+Two planes, not three: the portrait drifts one way, a ground-glow behind it the
+other. The rates are small because the engine's range is `rate x (p - 0.5) x 100`
+and this hero's `p` sweeps 0–1 across roughly two screens — 0.55 is ±27px.
+Enough to notice on a second pass, far too little to read as the page sliding.
+
+**`portrait-in` is retired, and it was not merely redundant — it was silently
+disabling this.** v1 gave `.hero-portrait` `animation:portrait-in 1.1s both`, and
+`both` holds the `to` keyframe (`transform:none`) on the element forever. A CSS
+animation sits **above inline styles in the cascade**, so from that moment the
+engine's per-frame `style.transform = translate3d(...)` was computed and then
+discarded: the inline style read back correct while the computed transform sat at
+`matrix(1,0,0,1,0,0)`. The portrait could not move whatever the engine wrote. The
+glow beside it moved, because nothing had ever animated it — that asymmetry is
+what gave it away. It was also a second arrival on top of the real one, since
+`.hero-media` carries `data-sc-in` and already arrives through the reveal.
+
+### 4. The focused grid, and what it costs
+
+The reference dims the cards you are not pointing at, so the pointer alone decides
+which is selected. Adopted for `.case-list` and `.project-grid` at **0.35**, not
+the reference's 0.3.
+
+**The cost, stated.** A row's body copy is `--muted`, already a mix toward the
+ground, and the dim is a second mix on top — so dimmed rows are the
+lowest-contrast text on the site by some margin. 0.35 was chosen by eye against
+both themes rather than from a measured ratio: measuring the rendered contrast
+here produced nonsense, because `--ground` and `--muted` resolve through
+`color-mix()` to `color(srgb ...)` strings that cannot be read back out of
+`getComputedStyle`, and these rows sit inside a tinted `[data-ground]` band so the
+ground is not one token either. If this is ever defended with a number it has to
+come from rendered pixels per theme, not from tokens.
+
+What bounds the risk, all measured: nothing is dimmed until something is hovered,
+so every resting and reading state is untouched; the pointed-at row is at full
+strength throughout; the rule is inside `@media (hover:hover)` so touch never sees
+it; and the dim restores to 1.00 on all five rows when the pointer leaves.
+DESIGN.md 8's AA gate continues to govern every resting state.
+
+**A selector bug worth recording.** The obvious rule —
+`.case-list:has(.case-row:hover) .case-row` — matches **all five rows including
+the one under the pointer**, and it beats a separate `.case-row:hover{opacity:1}`
+restore rule, because `:has(.case-row:hover)` contributes (0,2,0) and the whole
+selector lands at (0,4,0) against the restore rule's (0,3,0). Measured before the
+fix: hovering row 3 put **all five** rows at 0.35 and the pointer selected
+nothing. The fix is `:not(:hover):not(:focus-visible)`, which removes the
+specificity contest instead of trying to out-rank it.
+
+### Verified
+
+- **Word cascade**, traced from first paint: `/` 4 words first visible at
+  195/195/243/294ms, `/about/` 6 words at 98/146/197/271/323/372ms, a case-study
+  `h1` at 50/101/151/225ms — 10 to 23 distinct opacity states per heading, 99ms
+  to 274ms between first and last word onset.
+- **The curve**: `blur(10px) -> blur(0px)` over ~800ms with opacity reaching 1 at
+  ~436ms and the blur still resolving at ~725ms, i.e. the focus pulls after the
+  text is legible, which is the ordering the reference has.
+- **Hero parallax**, read from the inline transform the engine writes at seven
+  scroll positions: portrait +26.1px, glow −14.3px, opposite directions, both
+  registered in the act's parallax list. Monotonic across the range.
+- **The focused grid**: nothing dimmed at rest; pointer on row 3 → row 3 at
+  **1.00** and the other four at **0.35/0.35/0.35/0.35**; restored to 1.00 on
+  leave; same behaviour on the two `/projects/` archive cards (1 / 0.35).
+- **No regressions**: every reveal target still transitions its own opacity;
+  scrolling the full home page leaves 0 of 76 below 0.9; the pinned acts still
+  scrub 1620px and 1980px with one step at a time.
+- **`prefers-reduced-motion: reduce`**: 0 of 76 targets and 0 of 35 words left
+  dim, and the engine writes no parallax transform at all.
+- **13 pages, 244 internal targets resolve**, no BOM, no mojibake, no 404s, no JS
+  errors, in both themes.
