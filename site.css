@@ -956,10 +956,14 @@ body{overflow-x:visible}
   --ring:2px solid var(--blue);
 
   /* the alternating section tint, light: butter lifted a little toward sand, so
-     the band is a warmer cream than the page rather than a different colour */
+     the band is a warmer cream than the page rather than a different colour.
+     `--tint-mix` is the share of `--tint-from`; `--tint-accent` is the label
+     colour on the band (the light theme's deep marmalade, 9.0:1 on it). */
   --tint-from:var(--sand);
   --tint-to:var(--butter);
   --tint-ink:var(--chocolate);
+  --tint-mix:9%;
+  --tint-accent:color-mix(in srgb,var(--marmalade) 30%,var(--toast));
 }
 html[data-theme=dark]{
   --bg:var(--earth);
@@ -989,15 +993,35 @@ html[data-theme=dark]{
   --sc-accent-ink:var(--fill-ink);
 
   /* --- the alternating section tint, in this theme ------------------------ */
-  /* The band is the site's PAPER in both themes: the same 9% sand into butter
-     the light theme paints on (which lands on #FBF5BE), with chocolate as its
-     ink. That is deliberate, because `--muted` on a band is 68% ink mixed toward
-     the band, and a dark band lifted off the earth instead (9% butter into earth)
-     would leave body copy at 3.4:1 — under the AA gate DESIGN.md §8 forbids
-     bypassing. The paper band clears it: ink 13.0:1, muted 4.9:1. */
-  --tint-from:var(--sand);
-  --tint-to:var(--butter);
-  --tint-ink:var(--chocolate);
+  /* The band INVERTS with the theme, so dark mode does not keep painting the
+     light cream the old comment here deliberately chose. A paper band on an
+     earth canvas was the last light-mode colour left on a dark page — every
+     tinted section (Capabilities and Selected work on the home page, the
+     toolkit on /about/, and one panel on each case study) read as a light slab
+     with dark ink while the rest of the page was dark. It now steps DOWN from
+     the canvas instead: 30% toast into the page ground, with butter ink.
+
+     `--tint-to` is the project canvas where one exists, so a case study's band
+     is a darker tone of that project rather than a warm brown dropped onto a
+     blue page. On every other page it falls back to the earth canvas. The
+     fallback has to be re-declared on `body[data-project]` (below), not relied
+     on through this var(): `--project-canvas` lives on the BODY, and a var()
+     inside a custom property resolves on the element that declares it, so a
+     `--project-canvas` fallback written here is seen from <html>, where no
+     project canvas exists, and silently became earth on every case study.
+
+     The mix share is `--tint-mix` and it is per-theme for the same reason the
+     old note gave: `--muted` on a band is 68% ink mixed toward the band, and
+     the derivation only clears the AA gate (§8) when the band is dark enough.
+     Measured on earth (#524033): ink 9.1:1, muted 5.2:1, accent 7.3:1 — every
+     project canvas is darker than earth, so those clear it too. A band lifted
+     OFF the canvas (9% butter into earth) would drop muted to 3.6:1, which is
+     why the dark band is darker than the page rather than lighter. */
+  --tint-from:var(--toast);
+  --tint-to:var(--project-canvas,var(--earth));
+  --tint-ink:var(--butter);
+  --tint-mix:30%;
+  --tint-accent:color-mix(in srgb,var(--marmalade) 30%,var(--butter));
 }
 
 /* --- buttons: marmalade -> fertile soil -> burnt toast -------------------- */
@@ -1252,8 +1276,10 @@ html[data-theme=dark] .hero-portrait{box-shadow:0 24px 60px -30px #0009}
   position:relative;
   color:inherit;
   /* the ground is computed FIRST, then every token is derived from it, so the
-     muted mix below mixes toward this band and not toward the page canvas */
-  --tint-ground:color-mix(in srgb,var(--tint-from) 9%,var(--tint-to));
+     muted mix below mixes toward this band and not toward the page canvas.
+     `--tint-mix` is per-theme (9% light, 30% dark) so the same rule paints a
+     warmer cream band on paper and a darker panel on earth. */
+  --tint-ground:color-mix(in srgb,var(--tint-from) var(--tint-mix,9%),var(--tint-to));
   background:var(--tint-ground);
   /* every text token is re-derived from the tinted ground, never inherited from
      the page, or body copy lands at 1.28:1 on the band */
@@ -1271,24 +1297,21 @@ html[data-theme=dark] .hero-portrait{box-shadow:0 24px 60px -30px #0009}
   --sc-ink:var(--tint-ink);
   --sc-ink-soft:var(--muted);
 
-  /* Two PAGE tokens are still wrong INSIDE a band, and in dark mode they are
-     invisible failures rather than near-misses:
+  /* The band is a page of its own, so a page token that would be wrong on it is
+     restated from the band (rather than inherited from the canvas beneath):
 
-       `--blue`  the dark theme's accent is marmalade pulled toward butter
-                 (#FADB8D), which measures 1.2:1 on this paper band — every
-                 hovered index numeral, "Read the case study" label and arrow
-                 would vanish. On paper the accent is the light theme's own
-                 (#62380C), which measures 9.0:1 here, and `--sc-accent` follows
-                 it so the engine's accent is the same colour as the page's.
+       `--blue`  the label accent has to flip with the band, not with the page.
+                 The band is paper in light and toast-dark in dark, so the accent
+                 is `--tint-accent`: the deep marmalade (#62380C, 9.0:1) on the
+                 paper band and the light marmalade (#FADB8D, 7.3:1) on the dark
+                 one. `--sc-accent` follows so the engine's accent matches the
+                 section.
        `--bg`    the archive card's overlay veil and the featured chip's text are
-                 both mixed from `--bg`. Left as the page's, dark mode would put
-                 the earth under the band's chocolate ink: the card's own heading
-                 over its veil measures 2.0:1 and the chip 2.0:1. In a band, the
-                 band is the page — so an inverted chip stays legible and the
-                 veil under copy is paper in both themes, as it already is in
-                 light. */
+                 both mixed from `--bg`. In a band the band IS the page, so an
+                 inverted chip and a veil under copy stay legible in both themes,
+                 whichever direction the band sits relative to the canvas. */
   --bg:var(--tint-ground);
-  --blue:color-mix(in srgb,var(--marmalade) 30%,var(--toast));
+  --blue:var(--tint-accent);
   --sc-accent:var(--blue);
 }
 [data-ground] .section-copy,
@@ -1369,6 +1392,9 @@ body[data-project]{
   --sc-accent:var(--marmalade);
   --sc-accent-ink:var(--toast);
   --ring:2px solid var(--marmalade);
+  /* the tint band steps down from THIS canvas in dark mode, not from the
+     <html>-scoped fallback (see the note at `--tint-to`) */
+  --tint-to:var(--project-canvas);
 }
 body[data-project] .project-detail-hero{background:var(--project-canvas)}
 /* the case study's own panels follow the ground, not the old page surfaces */
@@ -1726,6 +1752,9 @@ html:not([data-theme="dark"]) body[data-project]{
   --sc-accent:var(--blue);
   --sc-accent-ink:var(--fill-ink);
   --ring:2px solid var(--blue);
+  /* on a paper case study the tint band is the page's own cream again, as the
+     light theme intends — the body-level `--tint-to` above must be re-pointed */
+  --tint-to:var(--butter);
   /* the masthead follows the page rather than staying a dark bar on paper */
   --nav-bar:color-mix(in srgb,var(--butter) 88%,var(--project-paper));
   --nav-line:color-mix(in srgb,var(--chocolate) 18%,var(--project-paper));

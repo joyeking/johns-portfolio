@@ -665,39 +665,58 @@ sit next to each other; that is not the same as having no colour anywhere. The
 first pass read it the second way, set `background:transparent` with every token
 reset to `inherit`, and flattened every page.
 
-### 3. The alternating band, and why it is paper
+### 3. The alternating band, and why it inverts with the theme
 
 `build_site.mjs` walks the top-level sections in document order and tints every
 other one, so two tinted bands are never adjacent and the band is never the one
 that opens a page. One further guard: the last section of the walk is never
-tinted, because the contact band closes every page and in dark mode that band is
-butter — a tinted band beside it would be two light sections in a row. On
+tinted, because the contact band closes every page and sits on its own surface —
+a tinted band would hand it a differently-toned neighbour. On
 `/projects/` the two candidates are the list and the archive, and the archive is
 the section the contact band follows, so that page carries no band at all; its
 rows and hairlines carry the structure. (Inverting the starting parity for that
 page is the one-line change if a band is wanted there.)
 
-The band is the site's **paper** in both themes — 9% sand into butter, `#FBF5BE`
-— with chocolate ink. That is measured, not taste:
+The band answers the canvas beneath it, so — unlike every page token — it is
+paper in light and dark in dark mode. This is a measured reversal of the v19
+choice, which kept the band paper in both themes: on an earth canvas that was
+the last light-mode colour left on a dark page, and every tinted section read as
+a light slab with dark ink beside a dark page:
 
-| Pair on the band | Ratio |
-|---|---|
-| ink on band | **13.0** |
-| muted on band (68% ink into the band) | **4.9** |
-| accent on band (re-derived `--blue`, `#62380C`) | **9.0** |
-
-A dark band lifted off the earth instead (9% butter into earth, butter ink) would
-pass for the ink at 5.3:1 but not for `--muted`: 68% ink mixed toward a band that
-is *lighter* than the canvas lands at **3.4:1**, under the AA gate. The band is
-paper in both themes for that reason.
-
-Two **page** tokens are re-derived inside a band, because in dark mode leaving
-them alone is an invisible failure rather than a near miss:
-
-| Token | Left as the page's | In the band |
+| Mode | Band | Ink |
 |---|---|---|
-| `--blue` | dark accent `#FADB8D` on the paper band = **1.2:1** | `#62380C` = **9.0:1**, and `--sc-accent` follows |
-| `--bg` | earth under the band's chocolate ink: the archive card's overlay veil and the inverted chip's text = **2.0:1** each | the band = **13.0:1** |
+| Light | 9% sand into butter, `#FBF5BE` | chocolate |
+| Dark | 30% toast into the page canvas (`#524033` on the earth fallback; darker still on a case study's own canvas) | butter |
+
+That is measured, not taste:
+
+| Pair on the band | Light | Dark (earth) |
+|---|---|---|
+| ink on band | **13.0** | **9.2** |
+| muted on band (68% ink into the band) | **4.9** | **5.2** |
+| accent on band (re-derived `--blue`) | **9.0** (`#62380C`) | **7.3** (`#FADB8D`) |
+
+A case study's band steps down from that project's canvas rather than from the
+page: on ETtravel (`#21354A`) the band lands on `#222A36`. Every project canvas
+is darker than earth, so the same pairs clear AA by more (ink 12.3–17.1, muted
+6.6–8.3, accent 9.8–13.6). The dark band must be *darker* than the canvas, not
+lighter: a band lifted off earth (9% butter into earth) passes for the ink but
+not for `--muted` — 68% ink mixed toward a band lighter than the canvas lands at
+**3.6:1**, under the AA gate.
+
+The dark band's `--tint-to` is re-declared on `body[data-project]` rather than
+inherited from `<html>`: `--project-canvas` lives on the body, and a var()
+inside a custom property resolves on the element that declares it, so written on
+`html` the fallback silently became earth on every case study. The light theme
+re-points it at butter, so a case study's band is its cream again on paper.
+
+Two **page** tokens are re-derived inside the band, because the band is a ground
+of its own in either direction:
+
+| Token | Why it is re-derived | On the band |
+|---|---|---|
+| `--blue` | the accent must live on the band's own ground, not be inherited from the page — the v19 paper band made the dark accent vanish at **1.2:1** | `--tint-accent`, the theme's own accent in the band (`#62380C` = **9.0:1** on paper, `#FADB8D` = **7.3:1** on dark); `--sc-accent` follows |
+| `--bg` | the archive card's overlay veil and the inverted chip's text mix from `--bg`; inherited, they would mix from the page under the band's ink (**~2.0:1** each) | `--tint-ground`, the band itself, so both stay legible on either band |
 
 ### 4. v20 — the hovered project is the one that enlarges
 
