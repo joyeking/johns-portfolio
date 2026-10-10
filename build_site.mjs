@@ -335,13 +335,13 @@ const navLinks = (depth, active) => NAV_ITEMS.map(([key, label, href]) =>
 // Only the SECTIONS are counted, and the page hero is the untinted one that
 // opens the rhythm, so the first tinted band is never the hero.
 //
-// One further guard, because "consecutively" counts the contact band too: the
-// LAST section of the walk is never tinted, and the contact band closes every
-// page, so a band can never sit directly against it. In light mode that is only
-// tidiness (the contact band is an earth slab), but in dark mode the contact
-// band is butter, and a tinted band beside it would put two light sections in a
-// row — the exact thing the brief forbids. Skipping a tint can never create two
-// adjacent tints, so the rule still holds on every page.
+// One further guard, because "consecutively" counts the closing sections too:
+// the LAST section of the walk is never tinted, and the contact band closes
+// every page, so a tinted band can never sit directly against it. The contact
+// band sits on its own `--surface` ground in both themes (v17 stopped it
+// inverting to the page's opposite), so a band beside it would read as two
+// adjacent grounds — the exact thing the brief forbids. Skipping a tint can
+// never create two adjacent tints, so the rule still holds on every page.
 function alternateGrounds(body) {
   const sections = body.match(/<section class="section[^"]*"/g) || [];
   const last = sections.length - 1;
