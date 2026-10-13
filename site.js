@@ -38,6 +38,13 @@
   const systemDark=matchMedia('(prefers-color-scheme: dark)');
   const THEME_COLOR={light:'#FEFABF',dark:'#665547'};
   const readTheme=()=>{try{const t=localStorage.getItem('theme');return t==='light'||t==='dark'?t:null}catch(e){return null}};
+  // A case study carries ONE ground in both themes (site.css §3), so it renders
+  // in the theme its ground belongs to — dark for the five dark canvases,
+  // light for Gwarinpa — whatever the reader picked for the rest of the site.
+  // The reader's stored preference is read but never written here, so it still
+  // governs every other page; the switch itself is hidden on these pages
+  // (site.css), so the guard below is the belt to that pair of braces.
+  const fixedTheme=(()=>{const p=document.body&&document.body.dataset.project;return p?(p==='gwarinpa'?'light':'dark'):null})();
   const applyTheme=t=>{
     rootEl.dataset.theme=t;
     rootEl.style.colorScheme=t;
@@ -47,14 +54,15 @@
       modeSwitch.setAttribute('aria-label',t==='dark'?'Switch to light mode':'Switch to dark mode');
     }
   };
-  applyTheme(readTheme()||(systemDark.matches?'dark':'light'));
-  if(modeSwitch)modeSwitch.addEventListener('click',()=>{
+  applyTheme(fixedTheme||readTheme()||(systemDark.matches?'dark':'light'));
+  if(modeSwitch&&!fixedTheme)modeSwitch.addEventListener('click',()=>{
     const next=rootEl.dataset.theme==='dark'?'light':'dark';
     try{localStorage.setItem('theme',next)}catch(e){}
     applyTheme(next);
   });
-  // Track the OS only while the reader has not overridden it.
-  systemDark.addEventListener('change',e=>{if(!readTheme())applyTheme(e.matches?'dark':'light')});
+  // Track the OS only while the reader has not overridden it, and never on a
+  // page whose ground is fixed.
+  systemDark.addEventListener('change',e=>{if(!fixedTheme&&!readTheme())applyTheme(e.matches?'dark':'light')});
   document.querySelectorAll('.browser-frame[data-frame]').forEach(frame=>{
     frame.querySelectorAll('.device').forEach(btn=>btn.addEventListener('click',()=>{
       frame.querySelectorAll('.device').forEach(b=>b.classList.remove('is-active'));
@@ -71,37 +79,23 @@
     iframe.setAttribute('allow','fullscreen');
     screen.replaceChildren(iframe);
   }));
-  // HOME PREVIEW INDEX — the list drives the one stage image.
-  // The stage is a single <img>; hovering or focusing a row swaps its src once
-  // the replacement has decoded, so the plate fades out only when the next frame
-  // is ready and never flickers through a half-loaded image. Reduced motion skips
-  // the cross-fade and swaps at once. Other covers are warmed on idle so the
-  // first hover is instant without paying for every image at load.
-  document.querySelectorAll('[data-work-index]').forEach(index=>{
-    const img=index.querySelector('[data-work-img]');
-    const cap=index.querySelector('[data-work-cap]');
-    const rows=Array.from(index.querySelectorAll('.work-row'));
-    if(!img||!rows.length)return;
-    const base=img.getAttribute('src');
-    let current=base;
-    const show=row=>{
-      const src=row.dataset.cover;
-      if(!src||src===current)return;
-      current=src;
-      if(cap&&row.dataset.workTitle)cap.textContent=row.dataset.workTitle;
-      if(reduce){img.src=src;return}
-      const next=new Image();
-      const swap=()=>{img.src=src;img.classList.remove('is-swapping')};
-      next.onload=swap;next.onerror=swap;
-      img.classList.add('is-swapping');
-      next.src=src;
-    };
-    rows.forEach(row=>{
-      row.addEventListener('pointerenter',()=>show(row));
-      row.addEventListener('focus',()=>show(row));
-    });
-    const warm=()=>rows.forEach(r=>{if(r.dataset.cover&&r.dataset.cover!==base){const i=new Image();i.src=r.dataset.cover}});
-    if('requestIdleCallback' in window)requestIdleCallback(warm,{timeout:2500});else setTimeout(warm,1400);
+  // SELECTED WORK — the stacked covers decide their own row.
+  // Each cover is `position: sticky` inside its own <li>: one cover pins, the
+  // next slides over it, and the covers layer as the reader scrolls. What the
+  // script owes that layout is only the HIGHLIGHT — the row whose cover is
+  // actually on top is the active one. The observer watches a thin band sitting
+  // at the pin line, and a pinned cover is inside that band for exactly as long
+  // as it is pinned, so text and image cannot drift apart. No timers, no scroll
+  // handler, no per-frame layout reads. Without IntersectionObserver the rows
+  // are simply all active, which is the undimmed list.
+  document.querySelectorAll('[data-work-stack]').forEach(stack=>{
+    const items=Array.from(stack.querySelectorAll('.work-stack-item'));
+    if(!items.length)return;
+    if(!('IntersectionObserver' in window)){items.forEach(i=>i.classList.add('is-active'));return}
+    const io=new IntersectionObserver(entries=>{
+      entries.forEach(e=>e.target.classList.toggle('is-active',e.isIntersecting));
+    },{rootMargin:'-11% 0px -85% 0px',threshold:0});
+    items.forEach(i=>io.observe(i.querySelector('.work-stack-inner')||i));
   });
 
   // /projects/ FILTER RAIL — buttons show or hide plates. State only moves here:

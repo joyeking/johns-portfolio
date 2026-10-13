@@ -1353,13 +1353,39 @@ html[data-theme=dark] .hero-portrait{box-shadow:0 24px 60px -30px #0009}
    toggle was therefore completely inert on all five case studies: the page
    looked identical whichever way you pressed it. Each hue now has a paper and
    a ground version, so the switch moves the case study too while the project
-   stays recognisable in both. */
-body[data-project="ettravel"]{--project-canvas:color-mix(in srgb,#1F4B73 62%,var(--toast));--project-paper:color-mix(in srgb,#1F4B73 13%,var(--butter))}
-body[data-project="photography"]{--project-canvas:color-mix(in srgb,#2A2A2E 52%,var(--toast));--project-paper:color-mix(in srgb,#2A2A2E 10%,var(--butter))}
-body[data-project="joyinterior"]{--project-canvas:color-mix(in srgb,#8A6A4F 42%,var(--toast));--project-paper:color-mix(in srgb,#8A6A4F 15%,var(--butter))}
+   stays recognisable in both.
+
+   v26 — ONE GROUND, IN BOTH THEMES. The light twin proved to be the wrong
+   idea: a case study should look the way the work looks, in either theme, and
+   the five dark canvases were being replaced by a cream page the moment the
+   reader touched the switch. So each project is now NAMED — the colour you
+   see is the project's colour, not that colour mixed into the site's dark
+   ground:
+
+     ETtravel     #12402B  dark green        Photo portfolio  #1F1F22  matte dark
+     JoyInterior  #23201D  warm dark gray     Bible            #0A0A0C  obsidian black
+     Museum       unchanged — near-black, it was already right
+     Gwarinpa     unchanged — the one LIGHT-grounded case study (its paper)
+
+   The `--project-paper` twins below are kept, not deleted: they are the
+   fallback for a page whose JS never runs (see the note at fixedTheme() in the
+   generator), where the light rules are the legible ones. What pins the live
+   page to one theme is `fixedTheme()` in build_site.mjs + site.js — the ground
+   is fixed, so the page renders in the theme its ground belongs to, and the
+   switch is hidden below because it would have nothing to change. */
+body[data-project="ettravel"]{--project-canvas:#12402B;--project-paper:color-mix(in srgb,#1F4B73 13%,var(--butter))}
+body[data-project="photography"]{--project-canvas:#1F1F22;--project-paper:color-mix(in srgb,#2A2A2E 10%,var(--butter))}
+body[data-project="joyinterior"]{--project-canvas:#23201D;--project-paper:color-mix(in srgb,#8A6A4F 15%,var(--butter))}
 body[data-project="gwarinpa"]{--project-canvas:color-mix(in srgb,#1B2A4A 60%,var(--toast));--project-paper:color-mix(in srgb,#1B2A4A 12%,var(--butter))}
 body[data-project="museum"]{--project-canvas:color-mix(in srgb,#151412 38%,var(--toast));--project-paper:color-mix(in srgb,#151412 9%,var(--butter))}
-body[data-project="bible"]{--project-canvas:color-mix(in srgb,#2E2545 58%,var(--toast));--project-paper:color-mix(in srgb,#2E2545 12%,var(--butter))}
+body[data-project="bible"]{--project-canvas:#0A0A0C;--project-paper:color-mix(in srgb,#2E2545 12%,var(--butter))}
+/* The switch is withdrawn on a case study. The ground is fixed in both themes
+   now, so pressing it changed nothing but the knob — an inert control is worse
+   than an absent one. Written for both theme scopes: v25's own rule is
+   `html[data-theme=dark] .site-nav .mode-switch`, which outranks a plain
+   `body[data-project] .mode-switch` on specificity alone. */
+body[data-project] .mode-switch,
+html[data-theme] body[data-project] .mode-switch{display:none}
 
 /* These grounds are dark in BOTH themes, so the case study carries light ink
    and light-derived hairlines. This is the one place the page inverts, and it
@@ -1722,9 +1748,15 @@ html[data-theme="dark"]{--ok:#7DDBA4}
 .form-status.is-done{color:var(--ok)}
 html[data-theme="dark"] .form-status.is-done{color:var(--ok)}
 
-/* --- 6. the case studies answer the switch ------------------------------- */
+/* --- 6. the one light case study, and the no-JS fallback --------------- */
 /* Same tokens as the dark ground above, re-pointed at the project's light
-   twin. The selector is `html:not([data-theme=dark])` so it outranks the
+   twin. Under v26 this block is no longer "the case studies answer the
+   switch" — the ground is fixed per project (§3) and the page is pinned to the
+   theme its ground belongs to, so for the five dark canvases this rule never
+   fires. It still does two jobs: it IS Gwarinpa's ground (pinned light in both
+   themes), and it is the fallback for a page rendered without JS, where no
+   data-theme is set and the light tokens are the legible ones.
+   The selector is `html:not([data-theme=dark])` so it outranks the
    unconditional `body[data-project]` block it has to override. */
 html:not([data-theme="dark"]) body[data-project]{
   background-color:var(--project-paper);
@@ -2720,9 +2752,15 @@ img[data-sc-in].sc-in{transform:none}
    the copy, the right one is identity and availability */
 .hero-paste{
   display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,.78fr);
-  gap:clamp(32px,4.6vw,80px);align-items:end;width:100%;
+  gap:clamp(32px,4.6vw,80px);align-items:start;width:100%;
 }
-.hero-side{display:grid;gap:11px;min-width:0}
+/* v28: the two columns are TOP-aligned, not bottom-aligned. Aligned to their
+   bottoms, the right-hand block (the label plus three tag pills) sat a long way
+   down beside the buttons, so the glass read as two unrelated scraps of text at
+   different heights. Starting both columns on the same line puts the kicker and
+   "Projects that speak visually" on one horizontal, which is the alignment the
+   eye was already looking for. */
+.hero-side{display:grid;gap:11px;min-width:0;padding-top:1px}
 .hero-cap{
   display:flex;align-items:center;gap:9px;margin:0;
   font:var(--t-label)/1.5 'DM Mono';letter-spacing:.01em;color:rgba(255,255,255,.74);
@@ -2830,6 +2868,258 @@ html[data-theme=dark] .site-nav .mode-switch .ms-knob{transform:translateX(13px)
      phones; the switch stays out, because it is the one control that has no
      menu to hide in */
   .site-nav .mode-switch{margin-left:6px;padding:6px 8px}
+}
+
+/* ============================================================================
+   v26 - THE PHONE UI / UX SECTION
+   The Bible case study has sixteen full-height phone captures (828x1792) that
+   the site had no way to show: `.gallery` is a two-up landscape grid whose
+   first child spans both columns, so a portrait screen in it is either
+   letterboxed against a wide neighbour or stretched across the whole row.
+
+   1. FOUR-UP, AT REAL PROPORTIONS. The screens are portrait, so the grid is
+      four columns of them -- a tidy 4x4 at full width -- and each image keeps
+      its own aspect ratio. Nothing is cropped: a screenshot that shows the tab
+      bar has to still show the tab bar.
+
+   2. THE FRAME IS ON THE <figure>, NOT THE IMAGE. The grid staggers its
+      children, and the engine leaves an inline `transition-delay` on each one
+      for the life of the page; a border, radius or hover on the child itself
+      would inherit that delay. The figure carries the border, the radius and
+      the clipping; the image inside it is a plain child with no delay, so its
+      hover answer is immediate.
+
+   3. FILTER, NOT TRANSFORM, ON HOVER -- the same stance v11 took on `.gallery
+      img`: the work is shown whole, so it should not shrink, jump or scale
+      when the pointer crosses it.
+   ========================================================================= */
+.phone-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:clamp(10px,1.5vw,18px);
+  margin-top:46px;
+  align-items:start;
+}
+.phone-grid figure{
+  margin:0;
+  overflow:hidden;
+  border:1px solid var(--hair);
+  border-radius:var(--r-lg);
+  background:var(--surface);
+}
+.phone-grid img{
+  display:block;
+  width:100%;
+  height:auto;
+  transition:filter .45s var(--sc-ease-out);
+}
+@media(hover:hover){
+  .phone-grid img:hover{filter:saturate(1.06) brightness(1.03)}
+}
+@media(max-width:980px){
+  .phone-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:640px){
+  .phone-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){
+  .phone-grid img{transition:none}
+  .phone-grid img:hover{filter:none}
+}
+
+/* ============================================================================
+   v28 - THE HOME PAGE, RE-ORDERED AND RE-STACKED
+   Four structural changes, all on the home page:
+
+   1. SERVICES BAND — a marquee where the old trust strip of project names sat:
+      what is for sale, moving.
+   2. ABOUT — one viewport tall, moved up the page, its kicker and heading taken
+      out of the reveal and the drift so the top of the section holds.
+   3. SELECTED WORK — a stack of sticky covers instead of a stage plus a list.
+   4. THE SHOWCASE — three phone cards across, then a print row underneath.
+   ========================================================================== */
+
+/* --- 1. the services marquee ---------------------------------------------- */
+/* The track holds the seven names twice. Each item carries its own right
+   padding, so both halves are the same width to the pixel and -50% lands
+   exactly on the seam — that is the whole trick, and it is why the gap lives on
+   the item and not as a `gap` on the track (a track gap would be counted once,
+   not twice, and the loop would jump). */
+.services-band .wrap{padding-bottom:clamp(18px,2.2vw,30px)}
+.marquee{
+  position:relative;overflow:hidden;
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
+  padding:16px 0;
+  /* the ends fade rather than clip, so no name is ever cut mid-word at the
+     edge of the screen */
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);
+}
+.marquee-track{display:flex;width:max-content;animation:marquee 44s linear infinite}
+.marquee-echo{display:flex}
+@keyframes marquee{to{transform:translate3d(-50%,0,0)}}
+.marquee .item{
+  display:inline-flex;align-items:center;gap:clamp(24px,3vw,46px);
+  padding-right:clamp(24px,3vw,46px);
+  font:400 clamp(16px,1.6vw,21px)/1.4 var(--sc-font-display);
+  letter-spacing:-.01em;color:var(--ink);white-space:nowrap;
+}
+.marquee .item i{width:5px;height:5px;background:var(--marmalade);transform:rotate(45deg);flex:none}
+@media(hover:hover){.marquee:hover .marquee-track{animation-play-state:paused}}
+/* 44 seconds of travel is deliberately slow — this is a list to be read, not a
+   ticker to be watched. Reduced motion stops the loop and lets the track wrap
+   into a centred static list, which is the same content without the movement. */
+@media(prefers-reduced-motion:reduce){
+  .marquee-track{animation:none;width:100%;flex-wrap:wrap;justify-content:center}
+  .marquee-echo{display:none}
+  .marquee{-webkit-mask-image:none;mask-image:none}
+}
+
+/* --- 2. the about section: one screen tall, and it holds ------------------ */
+.about-stage{min-height:100svh;display:flex;align-items:center}
+.about-text{display:grid;gap:clamp(18px,2vw,26px);min-width:0}
+.about-top{display:grid;gap:14px}
+/* No drift for this one. Every other flow section translates its content as it
+   crosses the viewport; here the whole job of the section is to be READ as one
+   held screen, and a drifting top is a top that leaves. */
+.about-stage > .wrap{transform:none}
+
+/* IT HAS TO FIT, not merely FILL. `min-height:100svh` alone made the section
+   881px tall in a 700px window: the lead paragraphs ran at the page's
+   display-copy size (19-29px), the numbers carried a 34px lead-in and the
+   link a 30px one, and the section took the full 9.5vw of section padding —
+   so the proof at the bottom of the argument always sat a screen below it.
+
+   So the vertical budget is spent against the VIEWPORT HEIGHT, not the page's
+   width rhythm: padding, lead size and every lead-in scale with `vh` and only
+   clamp at the ends. Type steps down; the rhythm and the hierarchy do not. The
+   photo keeps its 4/5 — it is not what was overrunning. */
+.about-stage{padding-block:clamp(56px,7vh,110px)}
+.about-stage .about-copy{font-size:clamp(16px,calc(1.5vh + .55vw),24px);line-height:1.5}
+.about-stage .about-copy + .about-copy{margin-top:clamp(10px,1.6vh,16px)}
+.about-stage .stats{margin-top:clamp(16px,2.4vh,34px)}
+.about-stage .stats>div{padding-top:clamp(14px,2vh,22px)}
+.about-stage .case-more{margin-top:clamp(14px,2vh,30px)}
+
+/* --- 3. selected work: a stack of sticky covers --------------------------- */
+/* The covers layer because each <li> is taller than the pinned cover inside
+   it: a cover pins at `top`, holds for the height the <li has left over, and
+   the next cover scrolls up and over it. Nothing in here may put a `transform`
+   on `.work-stack-inner` — a transformed sticky element sticks to itself, and
+   the whole effect collapses to a normal list. */
+/* THE STACK NEEDS PIN ROOM, and `min-height` cannot give it. A sticky cover
+   pins when its natural top passes the pin line and holds only until its own
+   item's bottom catches up — so the TRAVEL is (item height − cover height −
+   pin line). An item exactly as tall as its content pins for ZERO pixels,
+   which is what happened whenever the cover grew past 88vh: the layering
+   silently degraded into a plain list. The padding IS the travel — it sits
+   inside the item's padding box, which is the sticky containing block, so a
+   tall portrait cover and a short landscape one each get the same hold. 66vh
+   of padding minus the 11vh pin line leaves 55vh of pinned scroll per project:
+   enough for the next cover to arrive over this one without the page turning
+   into a ten-screen crawl. */
+.work-stack{list-style:none;margin:0;padding:0}
+.work-stack-item{position:relative;min-height:88vh;padding-bottom:66vh}
+.work-stack-item:last-child{min-height:0;padding-bottom:26vh}
+.work-stack-inner{
+  position:sticky;top:11vh;
+  display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);
+  gap:clamp(24px,3vw,56px);align-items:end;
+}
+.work-stack-fig{
+  margin:0;overflow:hidden;min-width:0;
+  border:1px solid var(--hair);border-radius:var(--r-lg);
+  background:var(--surface);
+}
+/* The cover keeps its own ratio — nothing is cropped — but a portrait cover is
+   taller than a short window, and the pinned block has to FIT: the text sits
+   bottom-aligned to the cover, so a text column hanging below the fold while
+   its row is the highlighted one would defeat the whole section. So the box is
+   capped at the viewport minus the pin line and the picture is CONTAINED
+   inside it: landscape covers are untouched (they are already under the cap),
+   and a portrait cover letterboxes inside its own frame rather than running
+   off the screen. */
+.work-stack-fig img{
+  display:block;width:100%;height:auto;
+  max-height:calc(100svh - 180px);
+  object-fit:contain;object-position:50% 50%;
+}
+/* the text is dimmed until its cover is the one on top, so the row that is
+   highlighted is always the row whose image you can actually see */
+.work-stack-text{
+  display:grid;gap:6px;align-content:end;min-width:0;
+  opacity:.42;
+  transition:opacity .5s var(--sc-ease-out),filter .62s var(--sc-ease-out);
+}
+.work-stack-item.is-active .work-stack-text{opacity:1}
+.work-stack-item.is-active .work-row-idx{color:var(--blue)}
+.work-stack-text h3{margin:0;font:400 clamp(20px,1.9vw,28px)/1.14 var(--sc-font-display);letter-spacing:-.018em;transition:color .35s}
+.work-stack-text .kind{font:var(--t-label)/1.6 'DM Mono';letter-spacing:.01em;color:var(--muted)}
+.work-stack-text .work-row-desc{display:block;margin-top:5px;max-width:58ch;color:var(--muted);font-size:var(--t-small,14px);line-height:1.55}
+.work-stack-text .work-row-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
+.work-stack-text .work-row-go{display:inline-flex;margin-top:15px;color:var(--muted);transition:color .25s,transform .3s var(--sc-ease-out)}
+.work-stack-text .work-row-go .ic{width:16px;height:16px}
+@media(hover:hover){
+  .work-stack-inner:hover .work-stack-text{opacity:1}
+  .work-stack-inner:hover .work-row-go{color:var(--blue);transform:translateX(4px)}
+}
+@media(max-width:900px){
+  /* no pinning on a phone: each project is simply its text and its cover, one
+     after the other — which is what the stack degrades to, not a different
+     design bolted on for small screens. The pin room goes with it. */
+  .work-stack-item,.work-stack-item:last-child{min-height:0;padding-bottom:0}
+  .work-stack-item + .work-stack-item{margin-top:46px}
+  .work-stack-inner{position:static;grid-template-columns:1fr;gap:18px;align-items:start}
+  .work-stack-text{opacity:1;order:-1}
+}
+
+/* --- 4. the showcase: three phone cards, then the print row --------------- */
+.craft-projects{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:clamp(22px,2.6vw,40px);margin-top:44px;align-items:start;
+}
+.craft-project{display:grid;gap:12px;align-content:start;min-width:0}
+.craft-head{margin:0}
+.craft-name{
+  display:inline-flex;align-items:center;gap:7px;
+  font:600 15px/1.4 var(--sc-font-text);letter-spacing:-.012em;color:var(--ink);
+  transition:color .22s var(--sc-ease-out);
+}
+.craft-name .ic{width:15px;height:15px;transition:transform .25s var(--sc-ease-out)}
+a.craft-name:hover{color:var(--blue)}
+a.craft-name:hover .ic{transform:translateX(3px)}
+.craft-line{margin:0;color:var(--muted);font-size:13px;line-height:1.55;max-width:40ch}
+.craft-phones{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:4px}
+.craft-phones img{
+  display:block;width:100%;height:auto;
+  border:1px solid var(--hair);border-radius:var(--r-lg);
+  background:var(--surface);
+  transition:filter .45s var(--sc-ease-out);
+}
+.craft-graphic{margin-top:clamp(34px,4vw,56px);display:grid;gap:16px}
+.craft-label{margin:0;font:var(--t-label)/1.5 'DM Mono';letter-spacing:.01em;color:var(--muted)}
+.craft-plates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(12px,1.4vw,18px);align-items:start}
+.craft-plate{display:grid;gap:10px;min-width:0}
+.craft-plate img{
+  display:block;width:100%;height:auto;
+  border:1px solid var(--hair);border-radius:var(--r-lg);
+  background:var(--surface);
+  transition:filter .45s var(--sc-ease-out);
+}
+.craft-plate span{display:grid;gap:3px;font:600 13.5px/1.4 var(--sc-font-text);letter-spacing:-.01em;color:var(--ink)}
+.craft-plate span small{font:var(--t-label)/1.5 'DM Mono';letter-spacing:.01em;color:var(--muted);font-weight:400}
+@media(hover:hover){
+  .craft-phones img:hover,.craft-plate:hover img{filter:saturate(1.06) brightness(1.03)}
+}
+@media(max-width:900px){
+  .craft-projects{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .craft-projects{grid-template-columns:1fr}
+  .craft-plates{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .craft-phones img,.craft-plate img,.craft-name .ic,.work-stack-text{transition:none}
 }
 
 

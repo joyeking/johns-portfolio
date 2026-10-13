@@ -3,7 +3,7 @@
 // Craft model: every flagship case study is told as
 //   the brief -> what shipped -> design decisions -> the result -> client note -> live site.
 // Run: node build_site.mjs
-import { writeFileSync, mkdirSync, statSync } from 'node:fs';
+import { writeFileSync, mkdirSync, statSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 
@@ -227,6 +227,8 @@ const PROJECTS = [
     cover: `${W}/museum-of-art-in-addis/cover.webp`,
     gallery: [`${W}/museum-of-art-in-addis/shot-1.webp`, `${W}/museum-of-art-in-addis/shot-2.webp`,
       `${W}/museum-of-art-in-addis/shot-3.webp`],
+    // the museum's own phone app — see phoneSection() below
+    phone_copy: 'The museum’s phone app, eight screens deep: a photographic welcome, the split-screen menu, and the routes into artists, exhibitions, collections and visits — the same catalogue logic as the site, re-laid for a 390px screen.',
     brief: '“Introduce the museum and its artists online — a first presence that feels like the institution and can grow with it.”',
     shipped: 'A four-page site: an art-led home, a split-screen menu pairing a painting with the artist index (Artist / Art Work / Exhibitions tabs), an about page with the institution’s story, and a book-a-tour reservation flow.',
     approach: 'A clean, modern design organises the museum’s story, exhibitions and visiting information into clear sequences. The interface behaves like the building: quiet rooms, strong walls, art as the only loud element.',
@@ -254,6 +256,9 @@ const PROJECTS = [
     pages: 'Phone · desktop · web', stack: 'One shared type system, tuned for long-form reading on any screen.',
     cover: `${W}/bible-reading-app/cover.webp`,
     gallery: [`${W}/bible-reading-app/shot-1.webp`, `${W}/bible-reading-app/shot-2.webp`, `${W}/bible-reading-app/shot-3.webp`],
+    // Every `phone app *` capture in the source folder becomes its own section
+    // on this page — see phoneSection() / phoneShots() below.
+    phone_copy: 'The phone app, screen by screen: the Today home, the book library, reading plans, saved verses, the verse of the day and settings — the same type scale and the same reading measure as the desktop and web builds, in both light and dark paper.',
     // No live site for this one: the case study shows captured desktop/phone
     // screens through staticScreens() instead of livePreview().
     shots: { d: `${W}/bible-reading-app/show-d.webp`, p: `${W}/bible-reading-app/show-p.webp` },
@@ -279,11 +284,13 @@ const PROJECTS = [
 const ARCHIVE = [
   { slug: 'afri-buna-packed-coffee', cat: 'Branding', title: 'Afri Buna Coffee Packaging',
     kind: 'Brand & packaging', year: '2024', tag: 'Brand · Package', archive: true,
+    dims: [1120, 928],   // intrinsic size of the source PNG, for the home showcase
     problem_line: 'Packaging that reads at shelf distance and builds a coffee brand from scratch.',
     desc: 'Coffee brand and packaging design built to emphasize product quality, ingredients, and a clear, memorable identity.',
     image: 'assets/site/CJkc3GHzJFwVSDaaoW080VOpfCA.png', pages: 'Identity · pack · guidelines', duration: '4 weeks' },
   { slug: 'dream-faith-journey-book', cat: 'Graphic Design', title: 'Dream, Faith, Journey',
     kind: 'Editorial · cover series', year: '2024', tag: 'Editorial · Cover', archive: true,
+    dims: [1184, 864],
     problem_line: 'Three covers, one visual family — making an abstract concept feel hopeful and grounded.',
     desc: 'Three abstract book-cover designs that interpret dreams, faith, and a journey toward truth through clean, modern visual language.',
     image: 'assets/site/kR7pZLeRelrpLxpU2cTSOh45SdE.png', pages: '3 covers · system', duration: '6 weeks' },
@@ -474,7 +481,7 @@ function parallaxLayers(body) {
 // narrower than a full block. `site.js` `velocityLean()` reads this attribute
 // and does the per-frame work; there is no way to express it in CSS because a
 // scroll RATE is not a scroll POSITION.
-const LEAN_SKIP = /case-list|work-index|process-stage|data-sc-act="pin"/;
+const LEAN_SKIP = /case-list|work-index|process-stage|about-stage|data-sc-act="pin"/;
 function leanSections(body) {
   return body.replace(/<section(?![^>]*data-sc-lean)([^>]*)>/g, (m, attrs) => {
     if (LEAN_SKIP.test(m)) return m;
@@ -482,19 +489,35 @@ function leanSections(body) {
   });
 }
 
+// ONE GROUND PER CASE STUDY, IN BOTH THEMES.
+//
+// site.css §3 paints every case study the same background whichever theme the
+// reader is in — the project's own colour, not a light twin of it. So the page
+// cannot render in the reader's site-wide theme: it has to render in the theme
+// ITS ground belongs to, or a light preference would arrive with light-only
+// rules (hard-coded form ink, a paper masthead) sitting on a dark canvas.
+//
+// Five of the six are dark-grounded; Gwarinpa is the one light-grounded case
+// study, so it pins light and the rest pin dark. The reader's stored preference
+// is never written — it still governs every other page — and site.css hides the
+// switch on these pages, because there is nothing there left for it to change.
+const fixedTheme = tone => (tone ? (tone === 'gwarinpa' ? 'light' : 'dark') : null);
+
 function doc(title, depth, body, desc = 'Yohannes Assefa — Digital Designer', active = '', path = '', image = OG_IMAGE, tone = '') {
   body = alternateGrounds(body);
   body = sectionActs(body);
   body = leanSections(body);
   body = parallaxLayers(body);
   body = wordSplitHeadings(body);
+  // the case study's fixed ground decides this page's theme (see fixedTheme)
+  const fixed = fixedTheme(tone);
   const nav = `<a class="skip" href="#main">Skip to content</a><div data-sc-progress aria-hidden="true"></div><div class="cursor"></div><div class="noise" aria-hidden="true"></div>${SPRITE}<header class="site-nav"><a data-route class="brand" href="${rel(depth, 'index.html')}"><img class="brand-mark" src="${rel(depth, LOGO)}" alt="" width="36" height="36" decoding="async" fetchpriority="high"><span class="brand-txt"><b>Yohannes Assefa</b><small>Design &amp; Framer</small></span></a><nav class="nav-links" id="site-menu" aria-label="Primary">${navLinks(depth, active)}</nav><div class="nav-end"><span class="nav-status"><em></em>Available</span><a class="nav-contact" href="#contact">Start a project</a><button class="mode-switch" type="button" data-mode-switch aria-label="Switch between dark and light mode" aria-pressed="false"><span class="ms-opt ms-dark">&#9789;</span><span class="ms-track"><span class="ms-knob"></span></span><span class="ms-opt ms-light">&#9728;</span></button><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">${ic('menu')}</button></div></header>`;
   const foot = `<footer class="footer"><div class="wrap"><div><span class="footer-brand">Yohannes Assefa — digital designer &amp; Framer developer</span><span>Addis Ababa, Ethiopia · © 2026</span></div><nav class="footer-links" aria-label="Contact"><a href="mailto:yohannesassefa17@gmail.com">yohannesassefa17@gmail.com</a><a href="tel:+251921244796">+251 92 124 4796</a><a class="to-top" href="#main">${ic('up')}Back to top</a></nav></div></footer><script src="${rel(depth, 'engine/scrollcraft.js')}"></script><script src="${rel(depth, 'site.js')}"></script>`;
   // Social cards do not reliably render WebP, and the captured covers now are
   // WebP, so anything ending in .webp falls back to the site-wide OG image.
   const ogImage = /\.webp$/i.test(image) ? OG_IMAGE : image;
   const canonical = `${SITE}/${path}`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title><meta name="description" content="${desc}"><script>(function(){var d=document.documentElement,t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark"){try{t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(e){t="light"}}d.dataset.theme=t;d.style.colorScheme=t})()</script><link rel="icon" href="${rel(depth, LOGO_ICON)}"><link rel="apple-touch-icon" href="${rel(depth, LOGO_APPLE)}"><link rel="canonical" href="${canonical}"><meta name="theme-color" content="#FEFABF"><meta name="author" content="Yohannes Assefa"><meta property="og:type" content="website"><meta property="og:site_name" content="Yohannes Assefa"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${SITE}/${ogImage}"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="${rel(depth, 'engine/scrollcraft.css')}"><link rel="stylesheet" href="${rel(depth, 'site.css')}"></head><body${tone ? ` data-project="${tone}"` : ''}>${nav}<main id="main">${body}</main>${foot}</body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title><meta name="description" content="${desc}"><script>(function(){var d=document.documentElement,t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark"){try{t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(e){t="light"}}${fixed ? `;t=${JSON.stringify(fixed)};` : ''}d.dataset.theme=t;d.style.colorScheme=t})()</script><link rel="icon" href="${rel(depth, LOGO_ICON)}"><link rel="apple-touch-icon" href="${rel(depth, LOGO_APPLE)}"><link rel="canonical" href="${canonical}"><meta name="theme-color" content="#FEFABF"><meta name="author" content="Yohannes Assefa"><meta property="og:type" content="website"><meta property="og:site_name" content="Yohannes Assefa"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${SITE}/${ogImage}"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="${rel(depth, 'engine/scrollcraft.css')}"><link rel="stylesheet" href="${rel(depth, 'site.css')}"></head><body${tone ? ` data-project="${tone}"` : ''}>${nav}<main id="main">${body}</main>${foot}</body></html>`;
 }
 
 const contact = () => `<section class="contact-band" id="contact"><div class="wrap contact-grid"><div><p class="kicker">Start a project</p><h2 class="section-heading">Have something worth building? Let’s talk.</h2><p class="section-copy">Send the shape of the idea: the audience, the constraint, the deadline you are working to. You get a reply within one working day, and a written scope before any work starts.</p><ul class="contact-list"><li><a href="mailto:yohannesassefa17@gmail.com">${ic('mail')}yohannesassefa17@gmail.com</a></li><li><a href="tel:+251921244796">${ic('phone')}+251 92 124 4796</a></li><li><span>${ic('pin')}Addis Ababa, Ethiopia · GMT+3</span></li></ul></div><form class="form" data-demo-form><div class="field"><label for="cf-name">Your name</label><input id="cf-name" name="name" required autocomplete="name" placeholder="Jane Bekele"></div><div class="field"><label for="cf-email">Email</label><input id="cf-email" name="email" type="email" required autocomplete="email" placeholder="jane@company.com"></div><div class="field"><label for="cf-service">What do you need</label><select id="cf-service" name="service"><option>Website design &amp; build</option><option>UI / UX design</option><option>Brand &amp; identity</option><option>Graphic design</option></select></div><div class="field"><label for="cf-brief">The brief</label><textarea id="cf-brief" name="brief" placeholder="What are you building, and what does success look like?"></textarea></div><button class="submit" type="submit">Send enquiry ${ic('arrow-right')}</button><p class="form-status" role="status" aria-live="polite" data-form-status></p></form></div></section>`;
@@ -579,6 +602,60 @@ document.querySelectorAll('.showcase-toggle .device').forEach(function(btn){
 ${frame}</div></section>${script}`;
 }
 
+// THE PHONE WORK, AS ITS OWN SECTION.
+//
+// import_screenshots.py exports every phone capture in the source folder
+// (`phone app *` for the Bible, `iPhone *` for the museum) as
+// assets/work/<slug>/phone-N.webp, so the list is DERIVED from the folder
+// rather than hand-maintained: add a capture, re-run the importer, and the
+// next build picks it up. Projects with no phone captures return [] and get no
+// section at all, which is why this can sit unguarded in detailPage().
+const phoneShots = slug => {
+  const dir = join(ROOT, W, slug);
+  try {
+    return readdirSync(dir)
+      .filter(f => /^phone-\d+\.webp$/.test(f))
+      .sort((a, b) => parseInt(a.match(/\d+/)[0], 10) - parseInt(b.match(/\d+/)[0], 10))
+      .map(f => `${W}/${slug}/${f}`);
+  } catch { return []; }   // folder not imported yet
+};
+
+// Intrinsic phone-screen sizes, taken from assets/work/ at import time (the
+// Bible captures are 828px wide re-encoded to 700; the museum's Figma exports
+// are a native 390). Fed back into every <img> so sixteen lazy screens reserve
+// their own tall box and the grid never shifts as they arrive.
+const PHONE_DIMS = {
+  'bible-reading-app': [700, 1515],
+  'museum-of-art-in-addis': [390, 844],
+  'fintro': [393, 852],
+};
+
+// Kicker + heading + one line of copy + a four-up grid of full-height phone
+// screens, at the intrinsic size above.
+//
+// Each screen sits in a <figure> rather than being a direct child of the grid,
+// and that is load-bearing: the engine writes an inline `transition-delay` on
+// every stagger child (i * 40ms, up to 600ms on the last screen) and never
+// clears it, so a hover effect on a direct child would lag by up to six tenths
+// of a second. The figure is the stagger child; the image inside it has no
+// delay of its own and can respond instantly.
+//
+// 40ms is the step — sixteen children at the usual 130ms would be a two-second
+// tail, while this puts the last screen in place ~0.6s after the first.
+function phoneSection(p, depth) {
+  const shots = phoneShots(p.slug);
+  if (!shots.length) return '';
+  const [pw, ph] = PHONE_DIMS[p.slug] || [700, 1515];
+  const images = shots.map((src, i) =>
+    `<figure><img src="${rel(depth, src)}" alt="${p.title} — phone screen ${i + 1}" width="${pw}" height="${ph}" loading="lazy"></figure>`).join('');
+  return `<section class="section section-line"><div class="wrap">
+<p class="kicker">Phone app</p>
+<h2 class="section-heading">Phone UI / UX Design.</h2>
+<p class="section-copy">${p.phone_copy}</p>
+<div class="phone-grid" data-sc-in data-sc-stagger="40">${images}</div>
+</div></section>`;
+}
+
 function caseStudySections(p) {
   const duo = `<div class="cs-duo" data-sc-in data-sc-stagger="120">
 <article class="before"><span class="kicker">The brief</span><p>${p.brief}</p></article>
@@ -638,7 +715,7 @@ function detailPage(p, all) {
 <section class="section"><div class="wrap">${meta}<h2 class="section-heading" data-sc-in>From brief to build.</h2>${caseStudySections(p)}
 <div class="gallery" data-sc-in data-sc-stagger="130">${images}</div></div></section>
 ${testimonialHtml(p)}
-${p.visit ? livePreview(p, 2) : staticScreens(p, 2)}
+${p.visit ? livePreview(p, 2) : staticScreens(p, 2)}${phoneSection(p, 2)}
 <section class="section section-line"><div class="wrap"><p class="kicker">Keep reading</p><div class="cs-next">
 <a data-route class="cs-next-card" data-sc-in href="${rel(2, 'projects/' + prv.slug + '/index.html')}"><span class="kicker">† Previous</span><h3>${prv.title}</h3></a>
 <a data-route class="cs-next-card" href="${rel(2, 'projects/' + nxt.slug + '/index.html')}"><span class="kicker">Next case study →</span><h3>${nxt.title}</h3></a>
@@ -647,38 +724,60 @@ ${p.visit ? livePreview(p, 2) : staticScreens(p, 2)}
 }
 
 // ---------------- HOME ----------------
-const CLIENTS = ['ETtravel · travel platform', 'John’s Photography · portfolio', 'JoyInterior · interiors', 'Gwarinpa Real Estate · listings', 'Museum of Art in Addis · culture', 'Bible Reading App · reading app', 'Afri Buna · packaging', 'Dream, Faith, Journey · editorial'];
-// ONE trust strip, at label size. A static centred list: no loop, no duplicate copy.
-const strip = (items) => `<div class="strip" aria-hidden="true"><div class="strip-track">${items.map(t => `<span class="item">${t}<i></i></span>`).join('')}</div></div>`;
+// THE SERVICES BAND — a marquee, replacing the old trust strip that listed the
+// eight projects. What sits under the hero now says what is for SALE, not who
+// has bought, and it moves: one track, the list written twice, running sideways
+// on a long linear loop so -50% is exactly one copy and the seam never shows.
+//
+// The second copy is `aria-hidden` — it exists only for the loop. A screen
+// reader hears the seven services once, in order.
+//
+// Hovering pauses it (the reader wants to read one), reduced motion stops it
+// and lets the track wrap into a centred static list instead.
+const SERVICES = ['UI/UX design', 'Website design', 'Application design',
+  'Dashboard design', 'Wireframing &amp; prototyping', 'Graphic design',
+  'AI-assisted development'];
 
-// TWO WAYS TO SHOW THE SAME WORK, both derived from PROJECTS/ARCHIVE.
+const serviceBand = () => {
+  const items = SERVICES.map(s => `<span class="item">${s}<i></i></span>`).join('');
+  return `<section class="section section-line services-band"><div class="wrap"><p class="kicker">Services I provide</p><h2 class="section-heading">What I design, and build.</h2></div>
+<div class="marquee" data-marquee><div class="marquee-track">${items}<span class="marquee-echo" aria-hidden="true">${items}</span></div></div>
+</section>`;
+};
+
+// SELECTED WORK — A STACK OF STICKY COVERS.
 //
-// On the home page the work is a PREVIEW INDEX: a sticky stage that holds one
-// image, and a numbered list of projects. Hovering or focusing a row swaps the
-// stage to that project's cover (site.js), so the section shows the work rather
-// than describing it, while staying a single vertical list on a phone — the
-// stage is hidden below 1000px and each row carries its own thumbnail there.
+// The old preview index held ONE cover in a sticky stage and swapped it on
+// hover. It needed a pointer to be worth anything, and on a phone it collapsed
+// into a plain list of links. This is the stacked version: every project
+// carries its own cover, the cover pins at the top of the section while that
+// project is the one being read, and the next project slides up and OVER it —
+// so the covers layer on top of each other as you scroll and the section reads
+// as one continuous reel of the work rather than a menu of links.
 //
-// On /projects/ the work is a FILTERABLE PLATE GRID: every project and archive
-// piece is a full-ratio screenshot plate tagged with a discipline, and the rail
-// above filters by that tag. No plate is forced wider or taller than its image
-// — the deep point of this redesign is that the work is shown whole.
-//
-// The old `case-row` list is retired; its CSS stays in site.css as a v20 block.
+// Three things keep the layering honest:
+//   - each <li> is taller than the pinned cover, so there is scroll room for a
+//     cover to sit pinned before the next one arrives;
+//   - the sticky element is the INNER (never the <li>), and nothing that gets a
+//     `transform` is allowed to BE it — a transformed sticky element sticks to
+//     itself and the whole effect collapses;
+//   - the text follows the image that is actually on top: site.js marks the
+//     crossing item `.is-active` against a thin band at the pin line, so the
+//     highlighted row and the visible cover can never disagree.
 const workIndex = () => {
-  const first = PROJECTS[0];
-  const rows = PROJECTS.map((p, i) => `<li><a data-route data-work class="work-row" href="${rel(0, 'projects/' + p.slug + '/index.html')}" data-cover="${p.cover}" data-work-title="${p.title}">
+  const items = PROJECTS.map((p, i) => `<li class="work-stack-item">
+<a data-route class="work-stack-inner" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
+<div class="work-stack-text" data-sc-in data-sc-stagger="70">
 <span class="work-row-idx">${String(i + 1).padStart(2, '0')}</span>
-<span class="work-row-main"><span class="work-row-thumb"><img src="${p.cover}" alt="" loading="lazy"></span><span class="kind">${p.kind}</span><h3>${p.title}</h3><span class="work-row-desc">${p.problem_line}</span></span>
+<span class="kind">${p.kind}</span>
+<h3>${p.title}</h3>
+<p class="work-row-desc">${p.problem_line}</p>
 <span class="work-row-meta"><span class="chip">${p.duration}</span><span class="chip">${p.pages}</span></span>
-<span class="work-row-go">${ic('arrow-right')}</span></a></li>`).join('');
-  return `<div class="work-index" data-work-index>
-<figure class="work-stage">
-<span class="work-stage-img"><img data-work-img data-sc-in src="${first.cover}" alt="${first.title} — cover" ${coverAttr(first)} fetchpriority="high"></span>
-<figcaption class="work-stage-cap"><b data-work-cap>${first.title}</b><span>${first.kind}</span></figcaption>
-</figure>
-<ol class="work-list" data-sc-in data-sc-stagger="90">${rows}</ol>
-</div>`;
+<span class="work-row-go">${ic('arrow-right')}</span>
+</div>
+<figure class="work-stack-fig"><img src="${p.cover}" alt="${p.title} — cover" loading="lazy" ${coverAttr(p)}></figure>
+</a></li>`).join('');
+  return `<ol class="work-stack" data-work-stack>${items}</ol>`;
 };
 
 // One plate = one project, used for flagship and archive alike. The plate
@@ -705,11 +804,99 @@ ${pill('All', 'all', 'true')}
 ${cats.map(c => pill(esc(CAT_LABELS[catKey(c)] || c), catKey(c), 'false')).join('\n')}
 </div>`;
 };
+// ---------------- HOME: PHONE UI/UX + GRAPHIC DESIGN ----------------
+// Three phone projects and two graphic pieces: the side of the practice that is
+// not a case study. v28 lays the phone work out as THREE CARDS across — name,
+// one line of what it was, two frames — and gives the archive plates a row of
+// their own underneath, so the section is read as "phone, phone, phone" first
+// and "print" second instead of two half-columns competing.
+//
+// The phone frames are a CURATED pick, not slice(0, n): a landing page wants
+// the frames that carry the range — a splash beside a ledger, dark beside
+// light. They are INDEXED into phoneShots() and filtered, so a source folder
+// holding fewer captures degrades to fewer frames instead of a broken link.
+//
+// Fintro has no case-study page yet, so it is the one card that is NOT a link —
+// a name and a line, honestly unlinked, rather a link to nowhere. Its one-liner
+// is written here rather than pulled from PROJECTS because it is not in
+// PROJECTS; the other two read their line straight off the case study, so the
+// showcase and the case study cannot drift apart.
+const CRAFT = [
+  { name: 'Fintro', slug: 'fintro', shots: [1, 4], live: false,
+    line: 'A mobile finance app for bookkeeping — one account across every bank, with transfers, requests and a ledger that reads at a glance.' },
+  { name: 'Bible Reading App', slug: 'bible-reading-app', shots: [1, 3], live: true },
+  { name: 'Museum of Art in Addis', slug: 'museum-of-art-in-addis', shots: [1, 5], live: true },
+];
+
+const craftSection = () => {
+  const cards = CRAFT.map(pr => {
+    const shots = phoneShots(pr.slug);
+    const [w, h] = PHONE_DIMS[pr.slug] || [700, 1515];
+    const frames = pr.shots.map(i => shots[i - 1]).filter(Boolean)
+      .map(src => `<img src="${rel(0, src)}" alt="${pr.name} — phone screen" width="${w}" height="${h}" loading="lazy">`).join('');
+    if (!frames) return '';
+    const line = pr.line || (PROJECTS.find(p => p.slug === pr.slug) || {}).problem_line || '';
+    const name = pr.live
+      ? `<a data-route class="craft-name" href="${rel(0, 'projects/' + pr.slug + '/index.html')}">${pr.name} ${ic('arrow-right')}</a>`
+      : `<span class="craft-name">${pr.name}</span>`;
+    return `<article class="craft-project">
+<p class="craft-head">${name}</p>
+<p class="craft-line">${line}</p>
+<div class="craft-phones">${frames}</div>
+</article>`;
+  }).join('');
+  const plateHtml = ARCHIVE.map(a =>
+    `<a data-route class="craft-plate" href="${rel(0, 'projects/' + a.slug + '/index.html')}"><img src="${rel(0, a.image)}" alt="${a.title}" width="${a.dims[0]}" height="${a.dims[1]}" loading="lazy"><span>${a.title}<small>${a.tag}</small></span></a>`).join('');
+  return `<section class="section section-line"><div class="wrap">
+<p class="kicker">More of the work</p>
+<h2 class="section-heading">Phone UI / UX and graphic design.</h2>
+<p class="section-copy">Three phone projects and two pieces made for paper — the side of the practice a case study never covers.</p>
+<div class="craft-projects" data-sc-in data-sc-stagger="110">${cards}</div>
+<div class="craft-graphic" data-sc-in>
+<p class="craft-label">Graphic design</p>
+<div class="craft-plates">${plateHtml}</div>
+</div>
+</div></section>`;
+};
+
+// ---------------- HOME: THE ABOUT SECTION ----------------
+// v28 moved it up the page (hero, services, About, the pinned arc, the
+// capabilities) and sized it to ONE VIEWPORT, so the whole argument — portrait,
+// position, proof — is met without hunting for it.
+//
+// The kicker and the heading are deliberately NOT reveal targets. They used to
+// ride the same `data-sc-in` reveal as everything else, and the section was on
+// the scroll-velocity lean, so the text that states what the section IS was
+// also the first text to blur, drift and leave as the section came up. They now
+// simply exist: no fade in, no lean, nothing to wait for. Everything beneath
+// them — the copy, the numbers, the link — still arrives on the stagger.
+//
+// The three numbers are the ones this section can actually stand behind: years
+// in the craft, designs produced, clients. The "projects shipped" count was
+// removed because the same six case studies are two scrolls below, spelled out.
+const aboutSection = () => `<section class="section section-line about-stage"><div class="wrap about-split">
+<img class="about-photo" src="assets/site/portrait-about.jpg" alt="Yohannes Assefa in a black coat and turtleneck, facing the camera">
+<div class="about-text">
+<div class="about-top"><p class="kicker">About</p><h2 class="section-heading">Design with taste and conversion.</h2></div>
+<div data-sc-in data-sc-stagger="120">
+<p class="about-copy">I’m a digital designer trained in architecture — that background is why every project starts with what a visitor actually needs to understand, then the interface that gets it across, and only then the atmosphere.</p>
+<p class="about-copy">${numWordCap(PROJECTS.length)} case studies across travel, photography, interiors, real estate, culture and reading — five for clients and one self-initiated — plus two archive pieces in branding and editorial.</p>
+<div class="stats">
+<div><b><span data-sc-count="0 5">5</span>+</b><small>Years designing and building</small></div>
+<div><b><span data-sc-count="0 100">100</span>+</b><small>Designs produced end to end</small></div>
+<div><b><span data-sc-count="0 15">15</span>+</b><small>Clients and collaborators</small></div>
+</div>
+<p class="case-more"><a data-route class="button alt" href="about/index.html">More about me ${ic('arrow-right')}</a></p>
+</div>
+</div>
+</div></section>`;
+
 const home = `<section class="hero" data-sc-act="flow"><div class="hero-media"><span class="hero-glow" data-sc-parallax="${PARALLAX_GLOW}" aria-hidden="true"></span><span class="hero-horizon" data-sc-parallax="${PARALLAX_HORIZON}" aria-hidden="true"></span><img class="hero-portrait" src="assets/site/portrait-hero.jpg" alt="Yohannes Assefa, lit from behind in warm light" data-sc-parallax="${PARALLAX_PORTRAIT}"></div><div class="hero-top"><div class="wrap"><h1 data-sc-in data-sc-stagger="130"><span>Good design makes</span><span>your value <em>impossible to miss</em>.</span></h1></div></div><div class="hero-glass"><div class="wrap"><div class="hero-paste">
 <div><p class="kicker" data-sc-in>Yohannes Assefa — digital designer &amp; Framer developer</p><p class="hero-desc" data-sc-in>I design and build thoughtful websites and visual identities that help businesses communicate clearly, earn trust, and turn their ideas into compelling digital experiences.</p><div class="hero-actions" data-sc-in><a data-route class="button" href="projects/index.html">Explore my work ${ic('arrow-right')}</a><a class="button alt" href="#contact">Start a project</a></div></div>
 <div class="hero-side"><p class="hero-cap">Projects that speak visually</p><div class="hero-tags"><span class="hero-tag dot-live">Available for new work</span><span class="hero-tag">Addis Ababa, Ethiopia</span><span class="hero-tag">Replies within a working day</span></div></div>
 </div></div></div></section>
-${strip(CLIENTS)}
+${serviceBand()}
+${aboutSection()}
 <section class="section section-line" data-sc-act="pin" data-sc-span="${PIN_SPAN_HOME}"><div data-sc-stage class="wrap process-stage"><p class="kicker" data-sc-in>How I work</p><h2 class="section-heading" data-sc-in>One arc, every project.</h2><p class="section-copy" data-sc-in>The same three moves run through every project here, so the work can be judged on intent rather than taste.</p><div class="p-meter" aria-hidden="true" data-sc-in><span></span></div><div class="steps" data-sc-in data-sc-stagger="140"><article style="--sc-at:.02">${ic('search')}<span class="n">01</span><h3>The real constraint</h3><p>Every project starts with the actual constraint: who has to be convinced, what information has to be tamed, what the brand has to earn.</p></article><article style="--sc-at:.32">${ic('layers')}<span class="n">02</span><h3>The calls I made</h3><p>Each decision is written down with its reason — photography-first here, region-first navigation there — so the work explains itself.</p></article><article style="--sc-at:.62">${ic('target')}<span class="n">03</span><h3>What it added up to</h3><p>What shipped, on what timeline, and what it does for the client today. Verified, not exaggerated.</p></article></div></div></section>
 <section class="section section-line"><div class="wrap"><p class="kicker">Capabilities</p><h2 class="section-heading">Everything your brand needs to show up well.</h2><p class="section-copy">Interface, identity and development — websites and phone apps, designed and built end to end.</p><div class="services caps"><article class="service" data-sc-in><span class="n">01</span><h3>UI / UX Design</h3><p>Wireframing and prototyping
 Interface design for web and mobile
@@ -724,8 +911,8 @@ Landing pages and optimisation</p></article><article class="service" data-sc-in>
 Visual style guides
 Typography and colour systems
 Brand storytelling</p></article></div></div></section>
-<section class="section section-line" data-sc-act="flow"><div class="wrap about-split"><img class="about-photo" src="assets/site/portrait-about.jpg" alt="Yohannes Assefa in a black coat and turtleneck, facing the camera" data-sc-in><div data-sc-in data-sc-stagger="120"><p class="kicker">About</p><h2 class="section-heading">Designing with a clear purpose.</h2><p class="about-copy">I’m a digital designer trained in architecture — that background is why every project starts with what a visitor actually needs to understand, then the interface that gets it across, and only then the atmosphere.</p><p class="about-copy">${numWordCap(PROJECTS.length)} case studies across travel, photography, interiors, real estate, culture and reading — five for clients and one self-initiated — plus two archive pieces in branding and editorial.</p><div class="stats"><div><b data-sc-count="0 5">5</b><small>Years designing and building</small></div><div><b data-sc-count="0 ${allWork.length}">${allWork.length}</b><small>Projects shipped end to end</small></div><div><b><span data-sc-count="0 10">10</span>+</b><small>Clients and collaborators</small></div></div><p class="case-more"><a data-route class="button alt" href="about/index.html">More about me ${ic('arrow-right')}</a></p></div></div></section>
-<section class="section section-line" id="featured"><div class="wrap"><p class="kicker">Selected work</p><h2 class="section-heading">Selected work, shaped by real challenges.</h2><p class="section-copy">Hover a project to preview its cover; open it for the full story — the client’s ask, the calls I made, and what shipped.</p>${workIndex()}<p class="case-more"><a data-route class="button alt" href="projects/index.html">All projects &amp; archive ${ic('arrow-right')}</a></p></div></section>
+<section class="section section-line" id="featured"><div class="wrap"><p class="kicker">Selected work</p><h2 class="section-heading">Selected work, shaped by real challenges.</h2><p class="section-copy">Each project pins its cover as it takes the screen and the next one slides over it — scroll the stack, then open any project for the full story: the client’s ask, the calls I made, and what shipped.</p>${workIndex()}<p class="case-more"><a data-route class="button alt" href="projects/index.html">All projects &amp; archive ${ic('arrow-right')}</a></p></div></section>
+${craftSection()}
 <section class="section section-line"><div class="wrap"><p class="kicker">Client notes</p><h2 class="section-heading">Good work is better when it works for people.</h2><div class="proof" data-sc-in data-sc-stagger="140"><blockquote>${ic('quote')}<p>“His design transformed my travel agency business. He converted my ideas into a high-performing, visually striking website.”</p><cite><b>Sarah Yared</b><small>Owner, ETtravel</small></cite></blockquote><blockquote>${ic('quote')}<p>“He took the time to understand our goals and delivered a design that resonated perfectly with our audience.”</p><cite><b>Liya Woldu</b><small>Product Manager, JoyInterior</small></cite></blockquote></div><p class="case-more"><a data-route class="button alt" href="projects/index.html">See the work behind these ${ic('arrow-right')}</a></p></div></section>
 <section class="section section-line" data-sc-act="flow"><div class="wrap faq"><p class="kicker">Before you write</p><h2 class="section-heading">The questions I get asked.</h2><details><summary>What services do you offer?${ic('chevron-down')}</summary><p>UI/UX design, web design and AI-assisted development for websites and phone apps, plus branding and graphic design.</p></details><details><summary>How does the design process work?${ic('chevron-down')}</summary><p>We start with discovery, agree a direction, design and refine the work together, then prepare it for delivery.</p></details><details><summary>How long does a project take?${ic('chevron-down')}</summary><p>The timeline follows the scope. Every project receives an agreed schedule before work starts.</p></details><details><summary>How do I get started?${ic('chevron-down')}</summary><p>Send an enquiry with what you are creating and the problem you want to solve.</p></details></div></section>${contact()}`;
 writeFileSync(join(ROOT, 'index.html'), doc('Yohannes Assefa — Digital Designer', 0, home, `Yohannes Assefa designs and builds websites in Addis Ababa — ${PROJECTS.length} case studies, each told from brief to shipped site.`, 'home', ''));
