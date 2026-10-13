@@ -18,7 +18,7 @@ const SITE = 'https://joyeking.github.io/johns-portfolio';
 // Bump it whenever site.css / site.js / engine/* change: without it a phone
 // that loaded the old design once keeps serving itself the old stylesheet
 // long after the site has been rebuilt and redeployed.
-const VER = 'v30';
+const VER = 'v31';
 // Legacy hashed asset name; used as the site-wide OG image until a dedicated one exists.
 const OG_IMAGE = 'assets/site/oaXV5No2WInacbQ0FDOFpZXliKQ.jpg';
 
@@ -781,8 +781,7 @@ const workIndex = () => {
     // frame height still fills its box. Same URL as the shot, so no second
     // request; aria-hidden because it is decoration.
     return `<a data-route class="work-stage-card" style="--i:${i}" data-stage="${i}" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
-<span class="work-stage-img"><img class="work-stage-bg" src="${p.cover}" alt="" aria-hidden="true" ${load}><img class="work-stage-shot" src="${p.cover}" alt="${p.title} — cover" ${load} ${coverAttr(p)}></span>
-<span class="work-stage-cap"><b>${p.title}</b><span>${p.kind}</span></span>
+<span class="work-stage-img"><img class="work-stage-bg" src="${p.cover}" alt="" aria-hidden="true" ${load}><img class="work-stage-shot" src="${p.cover}" alt="${p.title} — cover" ${load} ${coverAttr(p)}><span class="work-stage-cap"><b>${p.title}</b><span>${p.kind}</span></span></span>
 </a>`;
   }).join('');
   const rows = PROJECTS.map((p, i) => `<li class="work-row-li" data-work-row="${i}"><a data-route class="work-row" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
@@ -838,10 +837,13 @@ ${cats.map(c => pill(esc(CAT_LABELS[catKey(c)] || c), catKey(c), 'false')).join(
 // the frames that carry the range — a splash beside a ledger, dark beside
 // light. They are INDEXED into phoneShots() and filtered, so a source folder
 // holding fewer captures degrades to fewer frames instead of a broken link.
+// The Bible card takes the DARK-MODE pair (the ReadBible home and the dark
+// collection), the way the app is actually read at night; the light captures
+// stay on the case study.
 const CRAFT = [
   { name: 'Limitless', slug: 'fintro', shots: [1, 4], to: 'projects/index.html',
     line: 'A mobile finance app for bookkeeping — one account across every bank, with transfers, requests and a ledger that reads at a glance.' },
-  { name: 'Bible Reading App', slug: 'bible-reading-app', shots: [1, 3], live: true },
+  { name: 'Bible Reading App', slug: 'bible-reading-app', shots: [13, 1], live: true },
   { name: 'Eyeta', slug: 'museum-of-art-in-addis', shots: [1, 5], live: true,
     line: 'Eight screens of a gallery app — a photographic welcome, a split-screen menu, and one tap into artists, exhibitions and visits.' },
 ];
