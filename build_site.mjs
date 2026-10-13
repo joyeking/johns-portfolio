@@ -14,6 +14,11 @@ const A = 'assets/site';
 const W = 'assets/work';
 // Canonical origin for OG/canonical tags.
 const SITE = 'https://joyeking.github.io/johns-portfolio';
+// Cache version, carried as ?v= on the two stylesheets and the two scripts.
+// Bump it whenever site.css / site.js / engine/* change: without it a phone
+// that loaded the old design once keeps serving itself the old stylesheet
+// long after the site has been rebuilt and redeployed.
+const VER = 'v29';
 // Legacy hashed asset name; used as the site-wide OG image until a dedicated one exists.
 const OG_IMAGE = 'assets/site/oaXV5No2WInacbQ0FDOFpZXliKQ.jpg';
 
@@ -512,12 +517,12 @@ function doc(title, depth, body, desc = 'Yohannes Assefa — Digital Designer', 
   // the case study's fixed ground decides this page's theme (see fixedTheme)
   const fixed = fixedTheme(tone);
   const nav = `<a class="skip" href="#main">Skip to content</a><div data-sc-progress aria-hidden="true"></div><div class="cursor"></div><div class="noise" aria-hidden="true"></div>${SPRITE}<header class="site-nav"><a data-route class="brand" href="${rel(depth, 'index.html')}"><img class="brand-mark" src="${rel(depth, LOGO)}" alt="" width="36" height="36" decoding="async" fetchpriority="high"><span class="brand-txt"><b>Yohannes Assefa</b><small>Design &amp; Framer</small></span></a><nav class="nav-links" id="site-menu" aria-label="Primary">${navLinks(depth, active)}</nav><div class="nav-end"><span class="nav-status"><em></em>Available</span><a class="nav-contact" href="#contact">Start a project</a><button class="mode-switch" type="button" data-mode-switch aria-label="Switch between dark and light mode" aria-pressed="false"><span class="ms-opt ms-dark">&#9789;</span><span class="ms-track"><span class="ms-knob"></span></span><span class="ms-opt ms-light">&#9728;</span></button><button class="menu-btn" type="button" data-menu-btn aria-expanded="false" aria-controls="site-menu" aria-label="Open menu">${ic('menu')}</button></div></header>`;
-  const foot = `<footer class="footer"><div class="wrap"><div><span class="footer-brand">Yohannes Assefa — digital designer &amp; Framer developer</span><span>Addis Ababa, Ethiopia · © 2026</span></div><nav class="footer-links" aria-label="Contact"><a href="mailto:yohannesassefa17@gmail.com">yohannesassefa17@gmail.com</a><a href="tel:+251921244796">+251 92 124 4796</a><a class="to-top" href="#main">${ic('up')}Back to top</a></nav></div></footer><script src="${rel(depth, 'engine/scrollcraft.js')}"></script><script src="${rel(depth, 'site.js')}"></script>`;
+  const foot = `<footer class="footer"><div class="wrap"><div><span class="footer-brand">Yohannes Assefa — digital designer &amp; Framer developer</span><span>Addis Ababa, Ethiopia · © 2026</span></div><nav class="footer-links" aria-label="Contact"><a href="mailto:yohannesassefa17@gmail.com">yohannesassefa17@gmail.com</a><a href="tel:+251921244796">+251 92 124 4796</a><a class="to-top" href="#main">${ic('up')}Back to top</a></nav></div></footer><script src="${rel(depth, 'engine/scrollcraft.js')}?v=${VER}"></script><script src="${rel(depth, 'site.js')}?v=${VER}"></script>`;
   // Social cards do not reliably render WebP, and the captured covers now are
   // WebP, so anything ending in .webp falls back to the site-wide OG image.
   const ogImage = /\.webp$/i.test(image) ? OG_IMAGE : image;
   const canonical = `${SITE}/${path}`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title><meta name="description" content="${desc}"><script>(function(){var d=document.documentElement,t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark"){try{t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(e){t="light"}}${fixed ? `;t=${JSON.stringify(fixed)};` : ''}d.dataset.theme=t;d.style.colorScheme=t})()</script><link rel="icon" href="${rel(depth, LOGO_ICON)}"><link rel="apple-touch-icon" href="${rel(depth, LOGO_APPLE)}"><link rel="canonical" href="${canonical}"><meta name="theme-color" content="#FEFABF"><meta name="author" content="Yohannes Assefa"><meta property="og:type" content="website"><meta property="og:site_name" content="Yohannes Assefa"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${SITE}/${ogImage}"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="${rel(depth, 'engine/scrollcraft.css')}"><link rel="stylesheet" href="${rel(depth, 'site.css')}"></head><body${tone ? ` data-project="${tone}"` : ''}>${nav}<main id="main">${body}</main>${foot}</body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>${title}</title><meta name="description" content="${desc}"><script>(function(){var d=document.documentElement,t=null;try{t=localStorage.getItem("theme")}catch(e){}if(t!=="light"&&t!=="dark"){try{t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}catch(e){t="light"}}${fixed ? `;t=${JSON.stringify(fixed)};` : ''}d.dataset.theme=t;d.style.colorScheme=t})()</script><link rel="icon" href="${rel(depth, LOGO_ICON)}"><link rel="apple-touch-icon" href="${rel(depth, LOGO_APPLE)}"><link rel="canonical" href="${canonical}"><meta name="theme-color" content="#FEFABF"><meta name="author" content="Yohannes Assefa"><meta property="og:type" content="website"><meta property="og:site_name" content="Yohannes Assefa"><meta property="og:title" content="${title}"><meta property="og:description" content="${desc}"><meta property="og:url" content="${canonical}"><meta property="og:image" content="${SITE}/${ogImage}"><meta name="twitter:card" content="summary_large_image"><link rel="stylesheet" href="${rel(depth, 'engine/scrollcraft.css')}?v=${VER}"><link rel="stylesheet" href="${rel(depth, 'site.css')}?v=${VER}"></head><body${tone ? ` data-project="${tone}"` : ''}>${nav}<main id="main">${body}</main>${foot}</body></html>`;
 }
 
 const contact = () => `<section class="contact-band" id="contact"><div class="wrap contact-grid"><div><p class="kicker">Start a project</p><h2 class="section-heading">Have something worth building? Let’s talk.</h2><p class="section-copy">Send the shape of the idea: the audience, the constraint, the deadline you are working to. You get a reply within one working day, and a written scope before any work starts.</p><ul class="contact-list"><li><a href="mailto:yohannesassefa17@gmail.com">${ic('mail')}yohannesassefa17@gmail.com</a></li><li><a href="tel:+251921244796">${ic('phone')}+251 92 124 4796</a></li><li><span>${ic('pin')}Addis Ababa, Ethiopia · GMT+3</span></li></ul></div><form class="form" data-demo-form><div class="field"><label for="cf-name">Your name</label><input id="cf-name" name="name" required autocomplete="name" placeholder="Jane Bekele"></div><div class="field"><label for="cf-email">Email</label><input id="cf-email" name="email" type="email" required autocomplete="email" placeholder="jane@company.com"></div><div class="field"><label for="cf-service">What do you need</label><select id="cf-service" name="service"><option>Website design &amp; build</option><option>UI / UX design</option><option>Brand &amp; identity</option><option>Graphic design</option></select></div><div class="field"><label for="cf-brief">The brief</label><textarea id="cf-brief" name="brief" placeholder="What are you building, and what does success look like?"></textarea></div><button class="submit" type="submit">Send enquiry ${ic('arrow-right')}</button><p class="form-status" role="status" aria-live="polite" data-form-status></p></form></div></section>`;
@@ -820,13 +825,15 @@ ${cats.map(c => pill(esc(CAT_LABELS[catKey(c)] || c), catKey(c), 'false')).join(
 // light. They are INDEXED into phoneShots() and filtered, so a source folder
 // holding fewer captures degrades to fewer frames instead of a broken link.
 //
-// Fintro has no case-study page yet, so it is the one card that is NOT a link —
-// a name and a line, honestly unlinked, rather a link to nowhere. Its one-liner
-// is written here rather than pulled from PROJECTS because it is not in
-// PROJECTS; the other two read their line straight off the case study, so the
-// showcase and the case study cannot drift apart.
+// Limitless — a mobile finance app — has no case-study page yet, so it is the
+// one card that is NOT a link: a name and a line, honestly unlinked, rather
+// than a link to nowhere. (Its captures live under the `fintro` slug, the name
+// the import script first knew it by; the label is what the artwork says.)
+// Its one-liner is written here rather than pulled from PROJECTS because it is
+// not in PROJECTS; the other two read their line straight off the case study,
+// so the showcase and the case study cannot drift apart.
 const CRAFT = [
-  { name: 'Fintro', slug: 'fintro', shots: [1, 4], live: false,
+  { name: 'Limitless', slug: 'fintro', shots: [1, 4], live: false,
     line: 'A mobile finance app for bookkeeping — one account across every bank, with transfers, requests and a ledger that reads at a glance.' },
   { name: 'Bible Reading App', slug: 'bible-reading-app', shots: [1, 3], live: true },
   { name: 'Museum of Art in Addis', slug: 'museum-of-art-in-addis', shots: [1, 5], live: true },
