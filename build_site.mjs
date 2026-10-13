@@ -18,7 +18,7 @@ const SITE = 'https://joyeking.github.io/johns-portfolio';
 // Bump it whenever site.css / site.js / engine/* change: without it a phone
 // that loaded the old design once keeps serving itself the old stylesheet
 // long after the site has been rebuilt and redeployed.
-const VER = 'v29';
+const VER = 'v30';
 // Legacy hashed asset name; used as the site-wide OG image until a dedicated one exists.
 const OG_IMAGE = 'assets/site/oaXV5No2WInacbQ0FDOFpZXliKQ.jpg';
 
@@ -774,10 +774,17 @@ const serviceBand = () => {
 //   - on a phone the stage is dropped and the rows carry their own thumbnails,
 //     which is how this section has always read on a small screen.
 const workIndex = () => {
-  const covers = PROJECTS.map((p, i) => `<a data-route class="work-stage-card" style="--i:${i}" data-stage="${i}" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
-<span class="work-stage-img"><img src="${p.cover}" alt="${p.title} — cover" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} ${coverAttr(p)}></span>
+  const covers = PROJECTS.map((p, i) => {
+    const load = i ? 'loading="lazy"' : 'fetchpriority="high"';
+    // Two images in one frame: the backdrop is the same file, blurred and dimmed
+    // behind the picture, so a landscape cover letterboxing inside the shared
+    // frame height still fills its box. Same URL as the shot, so no second
+    // request; aria-hidden because it is decoration.
+    return `<a data-route class="work-stage-card" style="--i:${i}" data-stage="${i}" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
+<span class="work-stage-img"><img class="work-stage-bg" src="${p.cover}" alt="" aria-hidden="true" ${load}><img class="work-stage-shot" src="${p.cover}" alt="${p.title} — cover" ${load} ${coverAttr(p)}></span>
 <span class="work-stage-cap"><b>${p.title}</b><span>${p.kind}</span></span>
-</a>`).join('');
+</a>`;
+  }).join('');
   const rows = PROJECTS.map((p, i) => `<li class="work-row-li" data-work-row="${i}"><a data-route class="work-row" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
 <span class="work-row-idx">${String(i + 1).padStart(2, '0')}</span>
 <span class="work-row-main"><span class="work-row-thumb"><img src="${p.cover}" alt="" loading="lazy"></span><span class="kind">${p.kind}</span><h3>${p.title}</h3><span class="work-row-desc">${p.problem_line}</span></span>
@@ -820,23 +827,23 @@ ${cats.map(c => pill(esc(CAT_LABELS[catKey(c)] || c), catKey(c), 'false')).join(
 // their own underneath, so the section is read as "phone, phone, phone" first
 // and "print" second instead of two half-columns competing.
 //
+// All three cards link. Limitless has no case-study page, so it points at the
+// work archive (/projects/), which carries the graphic and app work behind a
+// discipline filter — a real destination rather than a link to nowhere. The
+// third card is labelled EYETA, the name on the captures themselves (they were
+// imported from the eyeta folder); those screens live in the Museum of Art in
+// Addis case study, which is where the card sends you.
+//
 // The phone frames are a CURATED pick, not slice(0, n): a landing page wants
 // the frames that carry the range — a splash beside a ledger, dark beside
 // light. They are INDEXED into phoneShots() and filtered, so a source folder
 // holding fewer captures degrades to fewer frames instead of a broken link.
-//
-// Limitless — a mobile finance app — has no case-study page yet, so it is the
-// one card that is NOT a link: a name and a line, honestly unlinked, rather
-// than a link to nowhere. (Its captures live under the `fintro` slug, the name
-// the import script first knew it by; the label is what the artwork says.)
-// Its one-liner is written here rather than pulled from PROJECTS because it is
-// not in PROJECTS; the other two read their line straight off the case study,
-// so the showcase and the case study cannot drift apart.
 const CRAFT = [
-  { name: 'Limitless', slug: 'fintro', shots: [1, 4], live: false,
+  { name: 'Limitless', slug: 'fintro', shots: [1, 4], to: 'projects/index.html',
     line: 'A mobile finance app for bookkeeping — one account across every bank, with transfers, requests and a ledger that reads at a glance.' },
   { name: 'Bible Reading App', slug: 'bible-reading-app', shots: [1, 3], live: true },
-  { name: 'Museum of Art in Addis', slug: 'museum-of-art-in-addis', shots: [1, 5], live: true },
+  { name: 'Eyeta', slug: 'museum-of-art-in-addis', shots: [1, 5], live: true,
+    line: 'Eight screens of a gallery app — a photographic welcome, a split-screen menu, and one tap into artists, exhibitions and visits.' },
 ];
 
 const craftSection = () => {
@@ -847,8 +854,11 @@ const craftSection = () => {
       .map(src => `<img src="${rel(0, src)}" alt="${pr.name} — phone screen" width="${w}" height="${h}" loading="lazy">`).join('');
     if (!frames) return '';
     const line = pr.line || (PROJECTS.find(p => p.slug === pr.slug) || {}).problem_line || '';
-    const name = pr.live
-      ? `<a data-route class="craft-name" href="${rel(0, 'projects/' + pr.slug + '/index.html')}">${pr.name} ${ic('arrow-right')}</a>`
+    // `to` decides where a card sends you; `live` is the shorthand for "its own
+    // case study". Every card has one of the two now.
+    const target = pr.to || (pr.live ? 'projects/' + pr.slug + '/index.html' : '');
+    const name = target
+      ? `<a data-route class="craft-name" href="${rel(0, target)}">${pr.name} ${ic('arrow-right')}</a>`
       : `<span class="craft-name">${pr.name}</span>`;
     return `<article class="craft-project">
 <p class="craft-head">${name}</p>
