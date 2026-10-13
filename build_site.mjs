@@ -745,39 +745,43 @@ const serviceBand = () => {
 </section>`;
 };
 
-// SELECTED WORK — A STACK OF STICKY COVERS.
+// SELECTED WORK — THE OLD TWO-COLUMN INDEX, PINNED, WITH LAYERING COVERS.
 //
-// The old preview index held ONE cover in a sticky stage and swapped it on
-// hover. It needed a pointer to be worth anything, and on a phone it collapsed
-// into a plain list of links. This is the stacked version: every project
-// carries its own cover, the cover pins at the top of the section while that
-// project is the one being read, and the next project slides up and OVER it —
-// so the covers layer on top of each other as you scroll and the section reads
-// as one continuous reel of the work rather than a menu of links.
+// This is the preview index the site shipped with — a stage on the left, the
+// numbered list on the right — but the stage no longer swaps its cover on
+// hover. Every project owns a cover card, all the cards share ONE sticky
+// containing block (`.work-stage`), so as the section pins, each card holds at
+// the pin line while the next one scrolls up and OVER it. The section stays
+// fixed for as long as that layering takes; only the picture changes.
 //
-// Three things keep the layering honest:
-//   - each <li> is taller than the pinned cover, so there is scroll room for a
-//     cover to sit pinned before the next one arrives;
-//   - the sticky element is the INNER (never the <li>), and nothing that gets a
-//     `transform` is allowed to BE it — a transformed sticky element sticks to
-//     itself and the whole effect collapses;
-//   - the text follows the image that is actually on top: site.js marks the
-//     crossing item `.is-active` against a thin band at the pin line, so the
-//     highlighted row and the visible cover can never disagree.
+// The list is sticky in step with it: site.js marks the row whose cover is
+// actually on top `.is-active` against a two-pixel band sitting exactly on the
+// pin line, so the highlighted text and the visible cover cannot disagree.
+//   - `z-index:var(--i)` fixes the paint order: a later card is always the one
+//     on top, never a race between equal-stacked positioned boxes;
+//   - the stage carries a bottom SPACER row so the LAST card has room to pin —
+//     without it a sticky element whose bottom is its container's bottom can
+//     never stick at all, and the sixth cover would never layer (it is a row,
+//     not padding: the sticky constraint is the container's content box);
+//   - nothing in here may put a `transform` on a card or on `.work-list` — a
+//     transformed ancestor becomes the containing block and the pinning
+//     silently stops (LEAN_SKIP already keeps the velocity lean off `work-index`);
+//   - on a phone the stage is dropped and the rows carry their own thumbnails,
+//     which is how this section has always read on a small screen.
 const workIndex = () => {
-  const items = PROJECTS.map((p, i) => `<li class="work-stack-item">
-<a data-route class="work-stack-inner" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
-<div class="work-stack-text" data-sc-in data-sc-stagger="70">
+  const covers = PROJECTS.map((p, i) => `<a data-route class="work-stage-card" style="--i:${i}" data-stage="${i}" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
+<span class="work-stage-img"><img src="${p.cover}" alt="${p.title} — cover" ${i ? 'loading="lazy"' : 'fetchpriority="high"'} ${coverAttr(p)}></span>
+<span class="work-stage-cap"><b>${p.title}</b><span>${p.kind}</span></span>
+</a>`).join('');
+  const rows = PROJECTS.map((p, i) => `<li class="work-row-li" data-work-row="${i}"><a data-route class="work-row" href="${rel(0, 'projects/' + p.slug + '/index.html')}">
 <span class="work-row-idx">${String(i + 1).padStart(2, '0')}</span>
-<span class="kind">${p.kind}</span>
-<h3>${p.title}</h3>
-<p class="work-row-desc">${p.problem_line}</p>
+<span class="work-row-main"><span class="work-row-thumb"><img src="${p.cover}" alt="" loading="lazy"></span><span class="kind">${p.kind}</span><h3>${p.title}</h3><span class="work-row-desc">${p.problem_line}</span></span>
 <span class="work-row-meta"><span class="chip">${p.duration}</span><span class="chip">${p.pages}</span></span>
-<span class="work-row-go">${ic('arrow-right')}</span>
-</div>
-<figure class="work-stack-fig"><img src="${p.cover}" alt="${p.title} — cover" loading="lazy" ${coverAttr(p)}></figure>
-</a></li>`).join('');
-  return `<ol class="work-stack" data-work-stack>${items}</ol>`;
+<span class="work-row-go">${ic('arrow-right')}</span></a></li>`).join('');
+  return `<div class="work-index" data-work-stack>
+<div class="work-stage">${covers}</div>
+<div class="work-list-col"><ol class="work-list">${rows}</ol></div>
+</div>`;
 };
 
 // One plate = one project, used for flagship and archive alike. The plate

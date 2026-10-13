@@ -2463,11 +2463,11 @@ img[data-sc-in].sc-in{transform:none}
 /* ============================================================================
    v23 — THE WORK, SHOWN TWO WAYS
    ----------------------------------------------------------------------------
-   1. HOME: a sticky preview stage beside a numbered list. The stage holds one
-      image and the list drives it (site.js), so the section shows the work
-      instead of describing it. On a phone the stage is gone and each row
-      carries its own thumbnail, because a sticky figure under a scrolling list
-      is just a thing in the way.
+   1. HOME: (moved) a sticky preview stage beside a numbered list. That section
+      is now the pinned index — same two columns, but the covers layer one over
+      the other and the lit row follows the cover on top. Its rules live in the
+      v29 "selected work" block near the end of this file; the pointer below
+      stands in for them.
 
    2. /projects/: one filterable plate grid for the whole body of work. Each
       plate is the cover at its real proportions — never a fixed crop — with a
@@ -2479,75 +2479,11 @@ img[data-sc-in].sc-in{transform:none}
    rules stay above as the block that preceded this one.
    ============================================================================ */
 
-/* --- 1. home: the preview index ------------------------------------------- */
-.work-index{
-  display:grid;
-  grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);
-  gap:clamp(28px,4vw,68px);
-  align-items:start;
-  margin-top:44px;
-}
-.work-stage{position:sticky;top:104px;margin:0;display:grid;gap:14px}
-/* The stage shows each project at its REAL proportions — a tall page is tall,
-   a wide page is wide. A fixed aspect-ratio crop would slice the work to fit
-   the frame, which is exactly what the previous pass did to the covers. */
-.work-stage-img{
-  display:block;
-  overflow:hidden;
-  border-radius:var(--r-lg);
-  border:1px solid var(--hair);
-  background:var(--surface);
-}
-.work-stage-img img{
-  display:block;width:100%;height:auto;
-  transition:opacity .32s var(--sc-ease-out),transform .7s var(--sc-ease-out),filter .7s var(--sc-ease-out);
-}
-.work-stage-img img.is-swapping{opacity:.16}
-.work-stage-cap{
-  display:flex;align-items:baseline;justify-content:space-between;gap:16px;
-  font:var(--t-label)/1.5 'DM Mono';letter-spacing:.02em;color:var(--muted);
-}
-.work-stage-cap b{color:var(--ink);font-weight:500;font-size:13px}
-.work-stage-cap span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
-.work-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--hair)}
-.work-row{
-  display:grid;
-  grid-template-columns:34px minmax(0,1fr) auto 18px;
-  gap:clamp(12px,2vw,26px);
-  align-items:center;
-  padding:21px 0;
-  border-bottom:1px solid var(--hair);
-  transition:transform .35s var(--sc-ease-out),background-color .3s var(--sc-ease-out);
-}
-.work-row-idx{font:400 clamp(19px,1.8vw,25px)/1 var(--sc-font-display);color:var(--muted);font-variant-numeric:tabular-nums;transition:color .25s}
-.work-row-main{display:grid;gap:3px;min-width:0}
-.work-row-main .kind{font:var(--t-label)/1.6 'DM Mono';letter-spacing:.01em;color:var(--muted)}
-.work-row-main h3{margin:0;font:400 clamp(20px,1.9vw,28px)/1.14 var(--sc-font-display);letter-spacing:-.018em;transition:color .25s}
-.work-row-desc{display:block;margin-top:5px;max-width:58ch;color:var(--muted);font-size:var(--t-small,14px);line-height:1.55}
-.work-row-thumb{display:none}
-.work-row-meta{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}
-.work-row-go{display:inline-flex;color:var(--muted);transition:color .25s,transform .3s var(--sc-ease-out)}
-.work-row-go .ic{width:16px;height:16px}
-@media(hover:hover){
-  .work-row:hover{transform:translateX(6px)}
-  .work-row:hover .work-row-idx{color:var(--blue)}
-  .work-row:hover h3{color:var(--ink)}
-  .work-row:hover .work-row-go{color:var(--blue);transform:translateX(4px)}
-}
-@media(max-width:1000px){
-  .work-index{grid-template-columns:1fr;gap:0}
-  .work-stage{display:none}
-  .work-list{margin-top:4px}
-  .work-row{grid-template-columns:28px minmax(0,1fr) 18px;gap:14px;padding:18px 0}
-  .work-row-meta{display:none}
-  .work-row-idx{font-size:17px;align-self:start;margin-top:5px}
-  .work-row-thumb{
-    display:block;margin-bottom:11px;overflow:hidden;
-    border-radius:var(--r);border:1px solid var(--hair);background:var(--surface);
-  }
-  .work-row-thumb img{display:block;width:100%;height:auto}
-}
+/* --- 1. home: the preview index — MOVED ------------------------------------
+   Superseded by the pinned index in v29 §3 below (same two-column layout, but
+   the covers layer instead of the stage swapping one picture, and the row that
+   is lit follows the cover on top). Those rules own `.work-index`, `.work-stage`,
+   `.work-list` and `.work-row*` now; nothing else on the site uses them. */
 
 /* --- 2. /projects/: the filter rail + plate grid -------------------------- */
 .filter-rail{
@@ -3001,76 +2937,132 @@ html[data-theme=dark] .site-nav .mode-switch .ms-knob{transform:translateX(13px)
 .about-stage .stats>div{padding-top:clamp(14px,2vh,22px)}
 .about-stage .case-more{margin-top:clamp(14px,2vh,30px)}
 
-/* --- 3. selected work: a stack of sticky covers --------------------------- */
-/* The covers layer because each <li> is taller than the pinned cover inside
-   it: a cover pins at `top`, holds for the height the <li has left over, and
-   the next cover scrolls up and over it. Nothing in here may put a `transform`
-   on `.work-stack-inner` — a transformed sticky element sticks to itself, and
-   the whole effect collapses to a normal list. */
-/* THE STACK NEEDS PIN ROOM, and `min-height` cannot give it. A sticky cover
-   pins when its natural top passes the pin line and holds only until its own
-   item's bottom catches up — so the TRAVEL is (item height − cover height −
-   pin line). An item exactly as tall as its content pins for ZERO pixels,
-   which is what happened whenever the cover grew past 88vh: the layering
-   silently degraded into a plain list. The padding IS the travel — it sits
-   inside the item's padding box, which is the sticky containing block, so a
-   tall portrait cover and a short landscape one each get the same hold. 66vh
-   of padding minus the 11vh pin line leaves 55vh of pinned scroll per project:
-   enough for the next cover to arrive over this one without the page turning
-   into a ten-screen crawl. */
-.work-stack{list-style:none;margin:0;padding:0}
-.work-stack-item{position:relative;min-height:88vh;padding-bottom:66vh}
-.work-stack-item:last-child{min-height:0;padding-bottom:26vh}
-.work-stack-inner{
-  position:sticky;top:11vh;
-  display:grid;grid-template-columns:minmax(0,.82fr) minmax(0,1.18fr);
-  gap:clamp(24px,3vw,56px);align-items:end;
+/* --- 3. selected work: the index, pinned, covers layering ----------------- */
+/* The old two-column layout — stage left, numbered list right — with the stage
+   pinned for the whole section instead of swapping its picture on hover.
+   Every card shares ONE containing block (`.work-stage`), so a card pins at the
+   pin line, HOLDS there, and the next card scrolls up and over it: the layering
+   is the sticky stack, not a cross-fade.
+
+   The three things that keep it honest:
+     - `.work-stage` needs a bottom SPACER row. A sticky element whose bottom
+       edge is its container's bottom edge can never stick — without room below
+       it the last cover would never pin, and the layering would stop one
+       project early. It is a grid row rather than padding because the sticky
+       constraint is the container's content box, which padding sits outside of.
+       It also gives the finished stack a beat on screen before the section
+       leaves;
+     - `z-index:var(--i)` fixes paint order, so "the cover on top" always means
+       the newest pinned card;
+     - `max-height` on the picture: a portrait cover is taller than the window,
+       and the pinned block has to FIT — card top at the pin line, caption still
+       on screen. The frame keeps the full column width and the image is
+       CONTAINED inside it, so nothing is cropped; landscape covers never reach
+       the cap and are drawn as-is. */
+.work-index{
+  display:grid;
+  grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);
+  gap:clamp(28px,4vw,68px);
+  align-items:stretch;
+  margin-top:44px;
 }
-.work-stack-fig{
-  margin:0;overflow:hidden;min-width:0;
-  border:1px solid var(--hair);border-radius:var(--r-lg);
+.work-stage{
+  display:grid;gap:clamp(18px,2.4vw,34px);min-width:0;
+}
+/* pin room for the last card — an in-flow row, NOT padding: a sticky child is
+   constrained by its container's CONTENT box, so padding at the bottom would
+   give the stack height without giving the final cover anything to pin against.
+   It also gives the finished stack a beat on screen before the section leaves. */
+.work-stage::after{content:'';display:block;height:54vh}
+.work-stage-card{
+  position:sticky;top:104px;
+  display:grid;gap:12px;align-content:start;min-width:0;
+  z-index:var(--i,0);
+}
+.work-stage-img{
+  display:block;
+  overflow:hidden;
+  border-radius:var(--r-lg);
+  border:1px solid var(--hair);
   background:var(--surface);
 }
-/* The cover keeps its own ratio — nothing is cropped — but a portrait cover is
-   taller than a short window, and the pinned block has to FIT: the text sits
-   bottom-aligned to the cover, so a text column hanging below the fold while
-   its row is the highlighted one would defeat the whole section. So the box is
-   capped at the viewport minus the pin line and the picture is CONTAINED
-   inside it: landscape covers are untouched (they are already under the cap),
-   and a portrait cover letterboxes inside its own frame rather than running
-   off the screen. */
-.work-stack-fig img{
+.work-stage-img img{
   display:block;width:100%;height:auto;
-  max-height:calc(100svh - 180px);
+  max-height:calc(100svh - 250px);
   object-fit:contain;object-position:50% 50%;
 }
-/* the text is dimmed until its cover is the one on top, so the row that is
-   highlighted is always the row whose image you can actually see */
-.work-stack-text{
-  display:grid;gap:6px;align-content:end;min-width:0;
-  opacity:.42;
-  transition:opacity .5s var(--sc-ease-out),filter .62s var(--sc-ease-out);
+.work-stage-cap{
+  display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+  font:var(--t-label)/1.5 'DM Mono';letter-spacing:.02em;color:var(--muted);
 }
-.work-stack-item.is-active .work-stack-text{opacity:1}
-.work-stack-item.is-active .work-row-idx{color:var(--blue)}
-.work-stack-text h3{margin:0;font:400 clamp(20px,1.9vw,28px)/1.14 var(--sc-font-display);letter-spacing:-.018em;transition:color .35s}
-.work-stack-text .kind{font:var(--t-label)/1.6 'DM Mono';letter-spacing:.01em;color:var(--muted)}
-.work-stack-text .work-row-desc{display:block;margin-top:5px;max-width:58ch;color:var(--muted);font-size:var(--t-small,14px);line-height:1.55}
-.work-stack-text .work-row-meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px}
-.work-stack-text .work-row-go{display:inline-flex;margin-top:15px;color:var(--muted);transition:color .25s,transform .3s var(--sc-ease-out)}
-.work-stack-text .work-row-go .ic{width:16px;height:16px}
+.work-stage-cap b{color:var(--ink);font-weight:500;font-size:13px}
+.work-stage-cap span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* the list is pinned in step with the stage: it is the same height budget, so
+   every row stays on screen for as long as its cover is being shown */
+.work-list-col{min-width:0}
+.work-list{
+  position:sticky;top:104px;
+  list-style:none;margin:0;padding:0;border-top:1px solid var(--hair);
+}
+.work-row{
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr) auto 18px;
+  gap:clamp(12px,2vw,26px);
+  align-items:center;
+  padding:clamp(9px,1.5vh,20px) 0;
+  border-bottom:1px solid var(--hair);
+  opacity:.4;
+  transition:opacity .5s var(--sc-ease-out),transform .35s var(--sc-ease-out);
+}
+/* the row whose cover is actually on top is the lit one */
+.work-row-li.is-active .work-row{opacity:1}
+.work-row-li.is-active .work-row-idx{color:var(--blue)}
+.work-row-idx{font:400 clamp(19px,1.8vw,25px)/1 var(--sc-font-display);color:var(--muted);font-variant-numeric:tabular-nums;transition:color .3s}
+.work-row-main{display:grid;gap:3px;min-width:0}
+.work-row-main .kind{font:var(--t-label)/1.6 'DM Mono';letter-spacing:.01em;color:var(--muted)}
+.work-row-main h3{margin:0;font:400 clamp(20px,1.9vw,28px)/1.14 var(--sc-font-display);letter-spacing:-.018em;color:var(--ink);transition:color .3s}
+.work-row-desc{
+  display:block;margin-top:5px;max-width:58ch;color:var(--muted);
+  font-size:clamp(12px,1.6vh,14px);line-height:1.5;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.work-row-thumb{display:none}
+.work-row-meta{display:flex;gap:7px;justify-content:flex-end;flex-wrap:wrap}
+.work-row-go{display:inline-flex;color:var(--muted);transition:color .25s,transform .3s var(--sc-ease-out)}
+.work-row-go .ic{width:16px;height:16px}
 @media(hover:hover){
-  .work-stack-inner:hover .work-stack-text{opacity:1}
-  .work-stack-inner:hover .work-row-go{color:var(--blue);transform:translateX(4px)}
+  .work-row:hover{opacity:1;transform:translateX(6px)}
+  .work-row:hover .work-row-idx{color:var(--blue)}
+  .work-row:hover .work-row-go{color:var(--blue);transform:translateX(4px)}
 }
-@media(max-width:900px){
-  /* no pinning on a phone: each project is simply its text and its cover, one
-     after the other — which is what the stack degrades to, not a different
-     design bolted on for small screens. The pin room goes with it. */
-  .work-stack-item,.work-stack-item:last-child{min-height:0;padding-bottom:0}
-  .work-stack-item + .work-stack-item{margin-top:46px}
-  .work-stack-inner{position:static;grid-template-columns:1fr;gap:18px;align-items:start}
-  .work-stack-text{opacity:1;order:-1}
+/* THE PINNED LIST HAS TO FIT. It is on screen for the whole layering, so if it
+   is taller than the window below the pin line, the row that is lit up can end
+   up under the fold while its own cover is on top — the one thing the highlight
+   exists to prevent. Below 820px of viewport height the description line goes
+   (title, kind and chips still carry the row, and the copy lives on the cover's
+   caption and the case page); below 640px the kind label goes with it. Padding
+   and type already scale with vh — this is what closes the last ~150px. */
+@media(max-height:820px){
+  .work-row-desc{display:none}
+}
+@media(max-height:640px){
+  .work-row-main .kind{display:none}
+}
+@media(max-width:1000px){
+  /* no pinning on a phone: the stage goes, the rows carry their own covers —
+     which is how this section has always read on a small screen. */
+  .work-index{grid-template-columns:1fr;gap:0}
+  .work-stage{display:none}
+  .work-list{position:static;top:auto}
+  .work-row{grid-template-columns:28px minmax(0,1fr) 18px;gap:14px;padding:18px 0;opacity:1}
+  .work-row-meta{display:none}
+  .work-row-idx{font-size:17px;align-self:start;margin-top:5px}
+  .work-row-thumb{
+    display:block;margin-bottom:11px;overflow:hidden;
+    border-radius:var(--r);border:1px solid var(--hair);background:var(--surface);
+  }
+  .work-row-thumb img{display:block;width:100%;height:auto}
 }
 
 /* --- 4. the showcase: three phone cards, then the print row --------------- */
@@ -3119,7 +3111,7 @@ a.craft-name:hover .ic{transform:translateX(3px)}
   .craft-plates{grid-template-columns:1fr}
 }
 @media(prefers-reduced-motion:reduce){
-  .craft-phones img,.craft-plate img,.craft-name .ic,.work-stack-text{transition:none}
+  .craft-phones img,.craft-plate img,.craft-name .ic,.work-row{transition:none}
 }
 
 

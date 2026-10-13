@@ -79,23 +79,39 @@
     iframe.setAttribute('allow','fullscreen');
     screen.replaceChildren(iframe);
   }));
-  // SELECTED WORK — the stacked covers decide their own row.
-  // Each cover is `position: sticky` inside its own <li>: one cover pins, the
-  // next slides over it, and the covers layer as the reader scrolls. What the
-  // script owes that layout is only the HIGHLIGHT — the row whose cover is
-  // actually on top is the active one. The observer watches a thin band sitting
-  // at the pin line, and a pinned cover is inside that band for exactly as long
-  // as it is pinned, so text and image cannot drift apart. No timers, no scroll
-  // handler, no per-frame layout reads. Without IntersectionObserver the rows
-  // are simply all active, which is the undimmed list.
+  // SELECTED WORK — the pinned index decides its own highlight.
+  // Every cover card is `position:sticky` in one shared column, so a card pins
+  // at the pin line, holds, and the next card scrolls up and over it. What the
+  // script owes that layout is only the ROW: the row whose cover is actually on
+  // top is the active one. The observer watches a 44px band sitting exactly on
+  // the pin line (104px, the same `top` the cards stick at), so a card joins the
+  // set at the moment it lands on top and leaves it only when the stack finally
+  // unpins — the highlight can never disagree with the picture. Active is the
+  // NEWEST card in the band, which is by definition the one you can see.
+  // No timers, no scroll handler, no per-frame layout reads; the band is rebuilt
+  // on resize so its edges keep matching the pin line at any window height.
+  // Without IntersectionObserver the rows are simply all lit — the plain list.
   document.querySelectorAll('[data-work-stack]').forEach(stack=>{
-    const items=Array.from(stack.querySelectorAll('.work-stack-item'));
-    if(!items.length)return;
-    if(!('IntersectionObserver' in window)){items.forEach(i=>i.classList.add('is-active'));return}
-    const io=new IntersectionObserver(entries=>{
-      entries.forEach(e=>e.target.classList.toggle('is-active',e.isIntersecting));
-    },{rootMargin:'-11% 0px -85% 0px',threshold:0});
-    items.forEach(i=>io.observe(i.querySelector('.work-stack-inner')||i));
+    const cards=Array.from(stack.querySelectorAll('[data-stage]'));
+    const rows=Array.from(stack.querySelectorAll('[data-work-row]'));
+    if(!cards.length||!rows.length)return;
+    const mark=k=>rows.forEach((r,i)=>r.classList.toggle('is-active',i===k));
+    if(!('IntersectionObserver' in window)){rows.forEach(r=>r.classList.add('is-active'));return}
+    const PIN=104,HOLD=44;
+    let io=null,timer=null;
+    const live=new Set();
+    const build=()=>{
+      if(io)io.disconnect();
+      live.clear();
+      const bottom=Math.max(1,window.innerHeight-(PIN+HOLD));
+      io=new IntersectionObserver(entries=>{
+        entries.forEach(e=>{const i=Number(e.target.dataset.stage);e.isIntersecting?live.add(i):live.delete(i)});
+        mark(live.size?Math.max.apply(null,[...live]):-1);
+      },{rootMargin:`-${PIN}px 0px -${bottom}px 0px`,threshold:0});
+      cards.forEach(c=>io.observe(c));
+    };
+    build();
+    window.addEventListener('resize',()=>{clearTimeout(timer);timer=setTimeout(build,150)});
   });
 
   // /projects/ FILTER RAIL — buttons show or hide plates. State only moves here:
